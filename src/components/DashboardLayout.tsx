@@ -36,8 +36,6 @@ type DashboardLayoutProps = {
 
 const adminNav = [
   { name: 'Dashboard', href: '/admin', icon: Home },
-  { name: 'Businesses', href: '/admin/businesses', icon: Building },
-  { name: 'All Reviews', href: '/admin/reviews', icon: LineChart },
 ];
 
 const companyNav = [
@@ -92,7 +90,7 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
                  <SidebarMenuItem>
                     <SidebarMenuButton className="hover:bg-primary-foreground/10">
                         <LogOut className="w-5 h-5"/>
-                        <Link href="/login">Logout</Link>
+                        <Link href="/">Logout</Link>
                     </SidebarMenuButton>
                  </SidebarMenuItem>
              </SidebarMenu>
