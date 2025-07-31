@@ -93,15 +93,6 @@ export default function LoginPage() {
               {isLoading ? 'Signing In...' : 'Sign In'}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
-            <p className="text-muted-foreground">
-              Use <span className="font-semibold text-foreground">company@reviewroute.com</span> for Company view.
-            </p>
-            <p className="text-muted-foreground">
-               Use <span className="font-semibold text-foreground">admin@reviewroute.com</span> for Admin view.
-            </p>
-             <p className="text-muted-foreground">Password is <span className="font-semibold text-foreground">password</span>.</p>
-          </div>
         </CardContent>
       </Card>
     </div>
