@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from "@/hooks/use-toast"
+import { getBusinesses } from '@/lib/data';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,20 +18,26 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Mock authentication
-    setTimeout(() => {
-      if (email === 'admin@reviewroute.com' && password === 'password') {
-        toast({
-          title: "Login Successful",
-          description: "Redirecting to admin dashboard...",
-        });
-        router.push('/admin');
-      } else if (email === 'company@reviewroute.com' && password === 'password') {
-        toast({
+    if (email === 'admin@reviewroute.com' && password === 'password') {
+      toast({
+        title: "Login Successful",
+        description: "Redirecting to admin dashboard...",
+      });
+      router.push('/admin');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const businesses = await getBusinesses();
+      const company = businesses.find(b => b.ownerEmail === email);
+
+      if (company && company.password === password) {
+         toast({
           title: "Login Successful",
           description: "Redirecting to your dashboard...",
         });
@@ -42,8 +49,15 @@ export default function LoginPage() {
           description: "Invalid email or password.",
         });
       }
-      setIsLoading(false);
-    }, 1000);
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Login Error",
+            description: "Could not verify credentials. Please try again later.",
+          });
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
