@@ -1,6 +1,8 @@
 import { ReviewForm } from "@/components/review/ReviewForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getBusinessById } from "@/lib/data";
 import { QrCode } from "lucide-react";
+import { notFound } from "next/navigation";
 
 type ReviewPageProps = {
     params: {
@@ -8,17 +10,12 @@ type ReviewPageProps = {
     }
 }
 
-// In a real app, you would fetch this data from your database
-const getBusinessData = (businessId: string) => {
-    console.log("Fetching data for business:", businessId);
-    return {
-        name: 'The Happy Cafe',
-        googleReviewLink: 'https://www.google.com' // Replace with a real link for testing
-    }
-}
+export default async function ReviewPage({ params }: ReviewPageProps) {
+    const business = await getBusinessById(params.businessId);
 
-export default function ReviewPage({ params }: ReviewPageProps) {
-    const business = getBusinessData(params.businessId);
+    if (!business) {
+        notFound();
+    }
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
