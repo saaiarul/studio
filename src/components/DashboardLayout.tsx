@@ -39,6 +39,8 @@ const adminNav = [
 ];
 
 const companyNav = [
+  // The company dashboard link is now dynamic, so we can't easily highlight it here.
+  // A more advanced solution would be needed to handle active states for dynamic routes.
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
@@ -60,6 +62,13 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
     avatar: role === 'admin' ? 'https://placehold.co/100x100/64B5F6/FFFFFF/png' : 'https://placehold.co/100x100/26A69A/FFFFFF/png'
   }
 
+  const isNavItemActive = (itemHref: string) => {
+    if (itemHref === '/dashboard') {
+        return pathname.startsWith('/dashboard');
+    }
+    return pathname === itemHref;
+  }
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen">
@@ -73,7 +82,7 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
                 <SidebarMenuItem key={item.name}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.href}
+                    isActive={isNavItemActive(item.href)}
                     className="data-[active=true]:bg-primary-foreground/10 data-[active=true]:text-primary-foreground hover:bg-primary-foreground/10"
                   >
                     <Link href={item.href}>

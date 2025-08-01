@@ -41,7 +41,7 @@ export default function LoginPage() {
           title: "Login Successful",
           description: "Redirecting to your dashboard...",
         });
-        router.push('/dashboard');
+        router.push(`/dashboard/${company.id}`);
       } else {
         toast({
           variant: "destructive",

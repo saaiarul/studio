@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   Table,
   TableBody,
@@ -156,7 +157,9 @@ export function BusinessTable({ businesses: initialBusinesses }: BusinessTablePr
                                 Edit
                             </DropdownMenuItem>
                         </DialogTrigger>
-                        <DropdownMenuItem>View Dashboard</DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href={`/dashboard/${business.id}`}>View Dashboard</Link>
+                        </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">Delete</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
