@@ -5,13 +5,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Bell,
-  Building,
   Home,
-  LineChart,
   LogOut,
   QrCode,
   Settings,
-  Users,
 } from 'lucide-react';
 
 import {
@@ -38,13 +35,6 @@ const adminNav = [
   { name: 'Dashboard', href: '/admin', icon: Home },
 ];
 
-const companyNav = [
-  // The company dashboard link is now dynamic, so we can't easily highlight it here.
-  // A more advanced solution would be needed to handle active states for dynamic routes.
-  { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-];
-
 const Logo = () => (
   <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary-foreground font-headline">
     <QrCode className="w-7 h-7" />
@@ -55,7 +45,15 @@ const Logo = () => (
 
 export function DashboardLayout({ children, role }: DashboardLayoutProps) {
   const pathname = usePathname();
+  const businessId = role === 'company' ? pathname.split('/')[2] : null;
+
+  const companyNav = businessId ? [
+    { name: 'Dashboard', href: `/dashboard/${businessId}`, icon: Home },
+    { name: 'Settings', href: `/dashboard/${businessId}/settings`, icon: Settings },
+  ] : [];
+
   const navItems = role === 'admin' ? adminNav : companyNav;
+  
   const user = {
     name: role === 'admin' ? 'Admin User' : 'Company User',
     email: role === 'admin' ? 'admin@reviewroute.com' : 'company@reviewroute.com',
@@ -63,10 +61,13 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
   }
 
   const isNavItemActive = (itemHref: string) => {
-    if (itemHref === '/dashboard') {
-        return pathname.startsWith('/dashboard');
+    // Exact match for admin or settings page
+    if (pathname === itemHref) return true;
+    // Special handling for dynamic dashboard route
+    if (itemHref.startsWith('/dashboard/') && pathname.startsWith('/dashboard/') && !pathname.includes('/settings')) {
+      return itemHref === `/dashboard/${businessId}`;
     }
-    return pathname === itemHref;
+    return false;
   }
 
   return (
