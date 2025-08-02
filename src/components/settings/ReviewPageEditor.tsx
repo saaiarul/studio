@@ -19,7 +19,11 @@ type ReviewComponent = {
     required: boolean; // for comments
 };
 
-export function ReviewPageEditor() {
+type ReviewPageEditorProps = {
+    businessId: string;
+}
+
+export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -62,6 +66,10 @@ export function ReviewPageEditor() {
             setIsLoading(false);
         }, 1500);
     };
+
+    const handlePreview = () => {
+        window.open(`/review/${businessId}`, '_blank');
+    }
 
     return (
         <Card className="shadow-lg">
@@ -129,7 +137,7 @@ export function ReviewPageEditor() {
                                     <Save className="mr-2 h-4 w-4" />
                                     {isLoading ? "Saving..." : "Save Changes"}
                                 </Button>
-                                <Button variant="outline" type="button">
+                                <Button variant="outline" type="button" onClick={handlePreview}>
                                     <Eye className="mr-2 h-4 w-4" />
                                     Preview
                                 </Button>

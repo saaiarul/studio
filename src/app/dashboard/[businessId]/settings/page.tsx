@@ -23,7 +23,7 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
           <h1 className="text-3xl font-bold font-headline">Settings</h1>
           <p className="text-muted-foreground">Manage your account and review page settings for {companyData.name}.</p>
         </div>
-        <ReviewPageEditor />
+        <ReviewPageEditor businessId={params.businessId} />
       </div>
     </DashboardLayout>
   );
