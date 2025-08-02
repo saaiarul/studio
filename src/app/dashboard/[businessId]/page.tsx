@@ -3,7 +3,7 @@ import { QRCodeCard } from '@/components/dashboard/QRCodeCard';
 import { StatsCards } from '@/components/dashboard/StatsCards';
 import { FeedbackTable } from '@/components/dashboard/FeedbackTable';
 import { GoogleLinkCard } from '@/components/dashboard/GoogleLinkCard';
-import { getBusinessById } from '@/lib/data';
+import { getBusinessById, getFeedbackByBusinessId } from '@/lib/data';
 import { notFound } from 'next/navigation';
 
 type DashboardPageProps = {
@@ -19,17 +19,13 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     notFound();
   }
 
+  const feedback = await getFeedbackByBusinessId(params.businessId);
+
   const reviewStats = {
-    totalReviews: 28,
-    averageRating: 2.8,
+    totalReviews: companyData.reviews,
+    averageRating: companyData.avgRating,
   };
 
-  const feedback = [
-    { id: '1', rating: 3, comment: 'The latte was okay, but not exceptional. Service was a bit slow.', date: '2024-05-20' },
-    { id: '2', rating: 1, comment: 'Cold food and the waiter was rude. Will not be coming back.', date: '2024-05-19' },
-    { id: '3', rating: 2, comment: 'The place is nice, but the music was too loud.', date: '2024-05-18' },
-    { id: '4', rating: 3, comment: '', date: '2024-05-17' },
-  ];
 
   return (
     <DashboardLayout role="company">

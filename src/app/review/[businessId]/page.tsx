@@ -29,7 +29,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
                     <CardDescription>Your feedback helps us improve!</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <ReviewForm googleReviewLink={business.googleReviewLink} />
+                    <ReviewForm businessId={params.businessId} googleReviewLink={business.googleReviewLink} />
                 </CardContent>
             </Card>
         </div>

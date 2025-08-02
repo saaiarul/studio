@@ -8,12 +8,14 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { StarRating } from '@/components/StarRating';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { addFeedback } from '@/lib/data';
 
 type ReviewFormProps = {
+  businessId: string;
   googleReviewLink: string;
 };
 
-export function ReviewForm({ googleReviewLink }: ReviewFormProps) {
+export function ReviewForm({ businessId, googleReviewLink }: ReviewFormProps) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +23,7 @@ export function ReviewForm({ googleReviewLink }: ReviewFormProps) {
   const { toast } = useToast();
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (rating === 0) {
       toast({
@@ -34,21 +36,26 @@ export function ReviewForm({ googleReviewLink }: ReviewFormProps) {
 
     setIsLoading(true);
 
-    // Mock API call & logic
-    setTimeout(() => {
-      console.log('Submitting review:', { rating, comment });
-      if (rating >= 4 && comment.length === 0) { // Only redirect if no comment is provided for high ratings
+    try {
+        if (rating >= 4 && comment.length === 0) {
+          toast({
+            title: 'Thank you for the high rating!',
+            description: 'Redirecting you to leave a public review...',
+          });
+          window.location.href = googleReviewLink;
+        } else {
+          await addFeedback(businessId, { rating, comment });
+          setIsSubmitted(true);
+        }
+    } catch (error) {
         toast({
-          title: 'Thank you for the high rating!',
-          description: 'Redirecting you to leave a public review...',
+            variant: "destructive",
+            title: "Submission Error",
+            description: "Could not submit your feedback. Please try again.",
         });
-        window.location.href = googleReviewLink;
-      } else {
-        // Save feedback to Firestore for all other cases
-        setIsSubmitted(true);
-      }
-      setIsLoading(false);
-    }, 1000);
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   if (isSubmitted) {
