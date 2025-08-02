@@ -37,14 +37,14 @@ export function ReviewForm({ googleReviewLink }: ReviewFormProps) {
     // Mock API call & logic
     setTimeout(() => {
       console.log('Submitting review:', { rating, comment });
-      if (rating >= 4) {
+      if (rating >= 4 && comment.length === 0) { // Only redirect if no comment is provided for high ratings
         toast({
           title: 'Thank you for the high rating!',
           description: 'Redirecting you to leave a public review...',
         });
         window.location.href = googleReviewLink;
       } else {
-        // Save feedback to Firestore
+        // Save feedback to Firestore for all other cases
         setIsSubmitted(true);
       }
       setIsLoading(false);
@@ -68,7 +68,7 @@ export function ReviewForm({ googleReviewLink }: ReviewFormProps) {
           <StarRating rating={rating} onRatingChange={setRating} />
         </div>
       </div>
-      {rating > 0 && rating < 4 && (
+      {rating > 0 && (
         <div className="space-y-2 animate-in fade-in-50 duration-500">
           <Label htmlFor="comment">Tell us more (optional)</Label>
           <Textarea
