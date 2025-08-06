@@ -1,7 +1,7 @@
 // In a real app, this data would be fetched from a database.
 // We're using a static list here for demonstration purposes.
 
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 
 type Business = {
     id: string;
@@ -23,7 +23,7 @@ type Feedback = {
 };
 
 
-const businesses: Business[] = [
+let businesses: Business[] = [
     { 
         id: 'comp-123', 
         name: 'The Happy Cafe', 
@@ -56,7 +56,57 @@ const businesses: Business[] = [
     },
 ];
 
-const feedbacks: Feedback[] = [];
+let feedbacks: Feedback[] = [];
+
+// Function to generate and reset mock data
+const generateMockData = () => {
+    // Reset data
+    businesses = businesses.map(b => ({ ...b, reviews: 0, avgRating: 0 }));
+    feedbacks = [];
+
+    const mockComments = [
+        "The service was incredibly slow, and the food was cold. Very disappointed.",
+        "Not what I was expecting. The atmosphere was lacking, and the staff seemed uninterested.",
+        "It was okay, but nothing special. Probably wouldn't come back.",
+        "A decent experience, but there's room for improvement in the menu.",
+        "Loved the ambiance and the food was delicious! Will definitely be back.",
+        "Fantastic service and amazing quality. Five stars all the way!",
+        "The staff was so friendly and helpful. Made our day!",
+        "Absolutely a top-notch experience from start to finish."
+    ];
+
+    businesses.forEach(business => {
+        let totalRating = 0;
+        let reviewCount = 0;
+        for (let i = 0; i < 25; i++) {
+            const rating = Math.floor(Math.random() * 5) + 1; // 1 to 5
+            
+            const newFeedback: Feedback = {
+                id: `fb-${business.id}-${i}`,
+                businessId: business.id,
+                rating,
+                comment: mockComments[Math.floor(Math.random() * mockComments.length)],
+                date: format(subDays(new Date(), Math.floor(Math.random() * 30)), 'yyyy-MM-dd')
+            };
+
+            feedbacks.push(newFeedback);
+
+            if (rating < 4) {
+                totalRating += rating;
+                reviewCount++;
+            }
+        }
+
+        if (reviewCount > 0) {
+            business.reviews = reviewCount;
+            business.avgRating = totalRating / reviewCount;
+        }
+    });
+};
+
+// Initial generation
+generateMockData();
+
 
 export async function getBusinesses(): Promise<Business[]> {
     // Simulate network delay
