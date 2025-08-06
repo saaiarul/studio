@@ -17,9 +17,19 @@ type Business = {
 type Feedback = {
     id: string;
     businessId: string;
+    customerId: string;
     rating: number;
     comment: string;
     date: string;
+};
+
+type Customer = {
+    id: string;
+    businessId: string;
+    name: string;
+    phone?: string;
+    email?: string;
+    firstReviewDate: string;
 };
 
 
@@ -57,12 +67,14 @@ let businesses: Business[] = [
 ];
 
 let feedbacks: Feedback[] = [];
+let customers: Customer[] = [];
 
 // Function to generate and reset mock data
 const generateMockData = () => {
     // Reset data
     businesses = businesses.map(b => ({ ...b, reviews: 0, avgRating: 0 }));
     feedbacks = [];
+    customers = [];
 
     const mockComments = [
         "The service was incredibly slow, and the food was cold. Very disappointed.",
@@ -74,19 +86,34 @@ const generateMockData = () => {
         "The staff was so friendly and helpful. Made our day!",
         "Absolutely a top-notch experience from start to finish."
     ];
+    
+    const mockNames = ["Alex Johnson", "Maria Garcia", "Chen Wei", "Fatima Al-Fassi", "David Smith"];
 
     businesses.forEach(business => {
         let totalRating = 0;
         let reviewCount = 0;
         for (let i = 0; i < 25; i++) {
             const rating = Math.floor(Math.random() * 5) + 1; // 1 to 5
+            const date = format(subDays(new Date(), Math.floor(Math.random() * 30)), 'yyyy-MM-dd');
+            const customerId = `cust-${business.id}-${i}`;
             
+            const newCustomer: Customer = {
+                id: customerId,
+                businessId: business.id,
+                name: mockNames[Math.floor(Math.random() * mockNames.length)],
+                phone: `555-01${String(i).padStart(2, '0')}`,
+                email: `customer${i}@example.com`,
+                firstReviewDate: date
+            }
+            customers.push(newCustomer);
+
             const newFeedback: Feedback = {
                 id: `fb-${business.id}-${i}`,
                 businessId: business.id,
+                customerId: customerId,
                 rating,
                 comment: mockComments[Math.floor(Math.random() * mockComments.length)],
-                date: format(subDays(new Date(), Math.floor(Math.random() * 30)), 'yyyy-MM-dd')
+                date: date
             };
 
             feedbacks.push(newFeedback);
@@ -133,10 +160,40 @@ export async function updateBusiness(id: string, data: Partial<Omit<Business, 'i
 
 export async function getFeedbackByBusinessId(businessId: string): Promise<Feedback[]> {
     await new Promise(resolve => setTimeout(resolve, 100));
-    return feedbacks.filter(f => f.businessId === businessId).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const businessFeedback = feedbacks.filter(f => f.businessId === businessId);
+    
+    const feedbackWithCustomer = businessFeedback.map(f => {
+        const customer = customers.find(c => c.id === f.customerId);
+        return {
+            ...f,
+            comment: `${customer?.name || 'Anonymous'}: ${f.comment}`
+        }
+    })
+
+    return feedbackWithCustomer.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-export async function addFeedback(businessId: string, data: { rating: number, comment: string }): Promise<Feedback> {
+export async function getCustomersByBusinessId(businessId: string): Promise<Customer[]> {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return customers.filter(c => c.businessId === businessId).sort((a, b) => new Date(b.firstReviewDate).getTime() - new Date(a.firstReviewDate).getTime());
+}
+
+export async function addCustomer(businessId: string, data: { name: string, phone?: string, email?: string }): Promise<Customer> {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    // In a real app, you'd check if a customer with this phone/email already exists.
+    const newCustomer: Customer = {
+        id: `cust-${Date.now()}`,
+        businessId,
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+        firstReviewDate: format(new Date(), 'yyyy-MM-dd')
+    };
+    customers.push(newCustomer);
+    return newCustomer;
+}
+
+export async function addFeedback(businessId: string, data: { rating: number, comment: string, customerName: string }): Promise<Feedback> {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     const business = businesses.find(b => b.id === businessId);
@@ -144,11 +201,18 @@ export async function addFeedback(businessId: string, data: { rating: number, co
         throw new Error("Business not found");
     }
 
+    const customer = customers.find(c => c.name === data.customerName && c.businessId === businessId);
+    if (!customer) {
+        throw new Error("Customer not found");
+    }
+
     // Add new feedback
     const newFeedback: Feedback = {
         id: `fb-${Date.now()}-${Math.random()}`,
         businessId,
-        ...data,
+        customerId: customer.id,
+        rating: data.rating,
+        comment: data.comment,
         date: format(new Date(), 'yyyy-MM-dd')
     };
     feedbacks.push(newFeedback);

@@ -7,20 +7,19 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { StarRating } from '@/components/StarRating';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { addFeedback } from '@/lib/data';
-import { CouponForm } from './CouponForm';
 
 type ReviewFormProps = {
   businessId: string;
   googleReviewLink: string;
+  customerName: string;
+  onReviewSubmitted: () => void;
 };
 
-export function ReviewForm({ businessId, googleReviewLink }: ReviewFormProps) {
+export function ReviewForm({ businessId, googleReviewLink, onReviewSubmitted, customerName }: ReviewFormProps) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -45,8 +44,8 @@ export function ReviewForm({ businessId, googleReviewLink }: ReviewFormProps) {
           });
           window.location.href = googleReviewLink;
         } else {
-          await addFeedback(businessId, { rating, comment });
-          setIsSubmitted(true);
+          await addFeedback(businessId, { rating, comment, customerName });
+          onReviewSubmitted();
         }
     } catch (error) {
         toast({
@@ -59,40 +58,32 @@ export function ReviewForm({ businessId, googleReviewLink }: ReviewFormProps) {
     }
   };
 
-  if (isSubmitted) {
-    return (
-      <div className="text-center p-8 space-y-6">
-        <div>
-            <CardTitle className="text-xl mb-2">Thank you!</CardTitle>
-            <p className="text-muted-foreground">Your feedback has been submitted.</p>
-        </div>
-        <CouponForm />
-      </div>
-    );
-  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2 text-center">
-        <Label className="text-base">How was your experience?</Label>
-        <div className="flex justify-center">
-          <StarRating rating={rating} onRatingChange={setRating} />
+    <div className="animate-in fade-in-50 duration-500">
+        <h3 className="text-xl font-semibold text-center mb-4">Thanks, {customerName}!</h3>
+        <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-2 text-center">
+            <Label className="text-base">How was your experience?</Label>
+            <div className="flex justify-center">
+            <StarRating rating={rating} onRatingChange={setRating} />
+            </div>
         </div>
-      </div>
-      {rating > 0 && (
-        <div className="space-y-2 animate-in fade-in-50 duration-500">
-          <Label htmlFor="comment">Tell us more (optional)</Label>
-          <Textarea
-            id="comment"
-            placeholder="What could we do better?"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-          />
-        </div>
-      )}
-      <Button type="submit" className="w-full bg-accent hover:bg-accent/90" disabled={isLoading || rating === 0}>
-        {isLoading ? 'Submitting...' : 'Submit Review'}
-      </Button>
-    </form>
+        {rating > 0 && (
+            <div className="space-y-2 animate-in fade-in-50 duration-500">
+            <Label htmlFor="comment">Tell us more (optional)</Label>
+            <Textarea
+                id="comment"
+                placeholder="What could we do better?"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+            />
+            </div>
+        )}
+        <Button type="submit" className="w-full bg-accent hover:bg-accent/90" disabled={isLoading || rating === 0}>
+            {isLoading ? 'Submitting...' : 'Submit Review'}
+        </Button>
+        </form>
+    </div>
   );
 }

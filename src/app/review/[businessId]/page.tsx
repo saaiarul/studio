@@ -1,4 +1,4 @@
-import { ReviewForm } from "@/components/review/ReviewForm";
+import { ReviewFlow } from "@/components/review/ReviewFlow";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getBusinessById } from "@/lib/data";
 import { QrCode } from "lucide-react";
@@ -25,11 +25,9 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
                         <QrCode className="h-8 w-8 text-primary" />
                         <h1 className="text-3xl font-bold font-headline">ReviewRoute</h1>
                     </div>
-                    <CardTitle className="text-2xl font-headline">Leave a review for {business.name}</CardTitle>
-                    <CardDescription>Your feedback helps us improve!</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <ReviewForm businessId={params.businessId} googleReviewLink={business.googleReviewLink} />
+                    <ReviewFlow business={business} />
                 </CardContent>
             </Card>
         </div>
