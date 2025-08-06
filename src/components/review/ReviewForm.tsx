@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { StarRating } from '@/components/StarRating';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { addFeedback } from '@/lib/data';
+import { CouponForm } from './CouponForm';
 
 type ReviewFormProps = {
   businessId: string;
@@ -60,9 +61,12 @@ export function ReviewForm({ businessId, googleReviewLink }: ReviewFormProps) {
 
   if (isSubmitted) {
     return (
-      <div className="text-center p-8">
-        <CardTitle className="text-xl mb-2">Thank you!</CardTitle>
-        <p className="text-muted-foreground">Your feedback has been submitted and will help us improve.</p>
+      <div className="text-center p-8 space-y-6">
+        <div>
+            <CardTitle className="text-xl mb-2">Thank you!</CardTitle>
+            <p className="text-muted-foreground">Your feedback has been submitted.</p>
+        </div>
+        <CouponForm />
       </div>
     );
   }
