@@ -22,7 +22,7 @@ export function CustomerDetailsForm({ businessId, onDetailsSubmitted }: Customer
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const validatePhone = (phoneNumber: string) => /^\d+$/.test(phoneNumber) || phoneNumber === '';
+  const validatePhone = (phoneNumber: string) => /^\+?\d{10,15}$/.test(phoneNumber) || phoneNumber === '';
   const validateEmail = (emailAddress: string) => /\S+@\S+\.\S+/.test(emailAddress) || emailAddress === '';
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,12 +31,12 @@ export function CustomerDetailsForm({ businessId, onDetailsSubmitted }: Customer
       toast({ variant: 'destructive', title: 'Please enter your name.' });
       return;
     }
-    if (!validateEmail(email)) {
+    if (email && !validateEmail(email)) {
         toast({ variant: 'destructive', title: 'Please enter a valid email address.' });
         return;
     }
-    if (!validatePhone(phone)) {
-        toast({ variant: 'destructive', title: 'Please enter a valid phone number (digits only).' });
+    if (phone && !validatePhone(phone)) {
+        toast({ variant: 'destructive', title: 'Please enter a valid phone number.', description: 'It should include the country code (e.g., +1) and be 10-15 digits long.' });
         return;
     }
 
@@ -79,7 +79,7 @@ export function CustomerDetailsForm({ businessId, onDetailsSubmitted }: Customer
                 id="phone" 
                 value={phone} 
                 onChange={(e) => setPhone(e.target.value)} 
-                placeholder="1234567890"
+                placeholder="+11234567890"
                 className="pl-10"
             />
         </div>
