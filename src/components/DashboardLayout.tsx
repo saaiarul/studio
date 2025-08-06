@@ -9,6 +9,7 @@ import {
   LogOut,
   QrCode,
   Settings,
+  Users,
 } from 'lucide-react';
 
 import {
@@ -49,6 +50,7 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
 
   const companyNav = businessId ? [
     { name: 'Dashboard', href: `/dashboard/${businessId}`, icon: Home },
+    { name: 'Customers', href: `/dashboard/${businessId}/customers`, icon: Users },
     { name: 'Settings', href: `/dashboard/${businessId}/settings`, icon: Settings },
   ] : [];
 
@@ -61,12 +63,20 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
   }
 
   const isNavItemActive = (itemHref: string) => {
-    // Exact match for admin or settings page
+    // Exact match
     if (pathname === itemHref) return true;
-    // Special handling for dynamic dashboard route
-    if (itemHref.startsWith('/dashboard/') && pathname.startsWith('/dashboard/') && !pathname.includes('/settings')) {
-      return itemHref === `/dashboard/${businessId}`;
-    }
+    
+    // For nested routes, we want the parent to be active.
+    // e.g. if we are on /dashboard/123/customers, the /dashboard/123 nav item should not be active.
+    // but if we are on /dashboard/123, it should be active.
+    if (pathname.startsWith(itemHref) && pathname.split('/').length === itemHref.split('/').length) return true;
+    
+    // special case for dashboard, since it has no sub-slug
+     if (itemHref.includes(businessId || '') && pathname.endsWith(businessId || '')) {
+       return true
+     }
+
+
     return false;
   }
 
