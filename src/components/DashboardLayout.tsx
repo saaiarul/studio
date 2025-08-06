@@ -7,6 +7,7 @@ import {
   Bell,
   Home,
   LogOut,
+  MessageCircle,
   QrCode,
   Settings,
   Users,
@@ -51,6 +52,7 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
   const companyNav = businessId ? [
     { name: 'Dashboard', href: `/dashboard/${businessId}`, icon: Home },
     { name: 'Customers', href: `/dashboard/${businessId}/customers`, icon: Users },
+    { name: 'Messaging', href: `/dashboard/${businessId}/messaging`, icon: MessageCircle },
     { name: 'Settings', href: `/dashboard/${businessId}/settings`, icon: Settings },
   ] : [];
 
