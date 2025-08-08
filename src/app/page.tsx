@@ -62,19 +62,19 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-black via-blue-950 to-black bg-[length:200%_200%] animate-gradient">
-      <Card className="w-full max-w-md mx-4 shadow-2xl bg-card/80 backdrop-blur-sm border-white/20 text-white">
+      <Card className="w-full max-w-md mx-4 shadow-2xl bg-white/90 backdrop-blur-sm border-white/20 text-black">
         <CardHeader className="text-center">
           <div className="flex justify-center items-center gap-2 mb-2">
             <QrCode className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold font-headline">ReviewRoute</h1>
+            <h1 className="text-3xl font-bold font-headline text-black">ReviewRoute</h1>
           </div>
-          <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
-          <CardDescription className="text-white/70">Enter your credentials to access your account</CardDescription>
+          <CardTitle className="text-2xl font-headline text-black">Welcome Back</CardTitle>
+          <CardDescription className="text-black/70">Enter your credentials to access your account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-white/90">Email</Label>
+              <Label htmlFor="email" className="text-black/90">Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input 
@@ -82,14 +82,14 @@ export default function LoginPage() {
                   type="email" 
                   placeholder="name@example.com" 
                   required 
-                  className="pl-10 bg-white/10 border-white/20 focus:bg-white/20 text-white placeholder:text-white/60"
+                  className="pl-10 bg-black/10 border-black/20 focus:bg-black/20 text-black placeholder:text-black/60"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-white/90">Password</Label>
+              <Label htmlFor="password" className="text-black/90">Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input 
@@ -97,7 +97,7 @@ export default function LoginPage() {
                   type="password" 
                   placeholder="••••••••" 
                   required 
-                  className="pl-10 bg-white/10 border-white/20 focus:bg-white/20 text-white placeholder:text-white/60"
+                  className="pl-10 bg-black/10 border-black/20 focus:bg-black/20 text-black placeholder:text-black/60"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
