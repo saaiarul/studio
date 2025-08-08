@@ -65,18 +65,6 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
     name: role === 'admin' ? 'Admin User' : 'Company User',
     email: role === 'admin' ? 'admin@reviewroute.com' : 'company@reviewroute.com',
     avatar: role === 'admin' ? 'https://placehold.co/100x100/64B5F6/FFFFFF/png' : 'https://placehold.co/100x100/26A69A/FFFFFF/png'
-  }
-
-  const isNavItemActive = (href: string) => {
-    // Exact match for non-dashboard routes
-    if (href !== `/dashboard/${businessId}` && pathname === href) {
-        return true;
-    }
-    // Special case for the main dashboard page to avoid matching its children
-    if (href === `/dashboard/${businessId}` && pathname === href) {
-        return true;
-    }
-    return false;
   };
 
   return (
@@ -92,7 +80,7 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
                 <SidebarMenuItem key={item.name}>
                   <SidebarMenuButton
                     asChild
-                    isActive={isNavItemActive(item.href)}
+                    isActive={pathname === item.href}
                     className="data-[active=true]:bg-white/10 data-[active=true]:text-white hover:bg-white/10 text-white/80"
                   >
                     <Link href={item.href}>
