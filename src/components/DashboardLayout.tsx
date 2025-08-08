@@ -35,10 +35,6 @@ type DashboardLayoutProps = {
   role: 'admin' | 'company';
 };
 
-const adminNav = [
-  { name: 'Dashboard', href: '/admin', icon: Home },
-];
-
 const Logo = () => (
   <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary-foreground font-headline">
     <QrCode className="w-7 h-7" />
@@ -50,6 +46,10 @@ const Logo = () => (
 export function DashboardLayout({ children, role }: DashboardLayoutProps) {
   const pathname = usePathname();
   const businessId = role === 'company' ? pathname.split('/')[2] : null;
+
+  const adminNav = [
+    { name: 'Dashboard', href: '/admin', icon: Home },
+  ];
 
   const companyNav = businessId ? [
     { name: 'Dashboard', href: `/dashboard/${businessId}`, icon: Home },
