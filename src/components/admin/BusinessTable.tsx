@@ -1,9 +1,9 @@
+
 "use client";
 
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -42,11 +42,10 @@ import {
   } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { updateBusiness, Business, BusinessStatus } from '@/lib/data';
-import { cn } from '@/lib/utils';
-
 
 type BusinessTableProps = {
   businesses: Business[];
+  onBusinessUpdated: (business: Business) => void;
 };
 
 enum DialogType {
@@ -61,13 +60,11 @@ const statusVariant: Record<BusinessStatus, "default" | "secondary" | "destructi
     rejected: "destructive",
 }
 
-export function BusinessTable({ businesses: initialBusinesses }: BusinessTableProps) {
-  const [businesses, setBusinesses] = useState(initialBusinesses);
+export function BusinessTable({ businesses, onBusinessUpdated }: BusinessTableProps) {
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
   const [dialogType, setDialogType] = useState<DialogType>(DialogType.NONE);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
 
   const qrCodeApiUrl = selectedBusiness ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(selectedBusiness.reviewUrl)}` : '';
 
@@ -91,12 +88,11 @@ export function BusinessTable({ businesses: initialBusinesses }: BusinessTablePr
     const updatedBusiness = await updateBusiness(selectedBusiness.id, updateData);
     
     if(updatedBusiness) {
-        setBusinesses(prev => prev.map(b => b.id === updatedBusiness.id ? updatedBusiness : b));
+        onBusinessUpdated(updatedBusiness);
         toast({
             title: "Business Updated",
             description: `${name} has been updated.`,
         });
-        router.refresh();
     } else {
         toast({
             variant: "destructive",

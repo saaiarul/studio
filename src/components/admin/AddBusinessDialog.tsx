@@ -1,7 +1,7 @@
+
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -16,13 +16,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PlusCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { createBusiness } from '@/lib/data';
+import { createBusiness, Business } from '@/lib/data';
 
-export function AddBusinessDialog() {
+type AddBusinessDialogProps = {
+    onBusinessAdded: (newBusiness: Business) => void;
+}
+
+export function AddBusinessDialog({ onBusinessAdded }: AddBusinessDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,15 +35,14 @@ export function AddBusinessDialog() {
     const ownerEmail = formData.get('ownerEmail') as string;
 
     try {
-        await createBusiness({ businessName, ownerEmail });
+        const newBusiness = await createBusiness({ businessName, ownerEmail });
+        onBusinessAdded(newBusiness);
         toast({
             title: "Application Submitted",
             description: `${businessName} has been added and is pending approval.`,
         });
         setIsLoading(false);
         setIsOpen(false);
-        // Refresh page data
-        router.refresh();
     } catch(error) {
         toast({
             variant: "destructive",
