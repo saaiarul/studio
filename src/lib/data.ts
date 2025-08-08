@@ -151,7 +151,7 @@ const generateMockData = () => {
     businesses.forEach(business => {
         let totalRating = 0;
         let reviewCount = 0;
-        for (let i = 0; i < 25; i++) {
+        for (let i = 0; i < 50; i++) { // Increased to 50 for more data
             const rating = Math.floor(Math.random() * 5) + 1; // 1 to 5
             const date = format(subDays(new Date(), Math.floor(Math.random() * 30)), 'yyyy-MM-dd');
             const customerId = `cust-${business.id}-${i}`;
@@ -178,14 +178,12 @@ const generateMockData = () => {
 
             feedbacks.push(newFeedback);
 
-            if (rating < 4) {
-                totalRating += rating;
-                reviewCount++;
-            }
+            totalRating += rating;
+            reviewCount++;
         }
 
         if (reviewCount > 0) {
-            business.reviews = reviewCount;
+            business.reviews = feedbacks.filter(f => f.businessId === business.id && f.rating < 4).length;
             business.avgRating = totalRating / reviewCount;
         }
     });
@@ -252,7 +250,7 @@ export async function updateBusiness(id: string, data: Partial<Omit<Business, 'i
 
 export async function getFeedbackByBusinessId(businessId: string): Promise<Pick<Feedback, 'id'|'rating'|'comment'|'date'>[]> {
     await new Promise(resolve => setTimeout(resolve, 100));
-    const businessFeedback = feedbacks.filter(f => f.businessId === businessId);
+    const businessFeedback = feedbacks.filter(f => f.businessId === businessId && f.rating < 4);
     
     const feedbackWithCustomer = businessFeedback.map(f => {
         const customer = customers.find(c => c.id === f.customerId);
@@ -267,6 +265,12 @@ export async function getFeedbackByBusinessId(businessId: string): Promise<Pick<
 
     return feedbackWithCustomer.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
+
+export async function getFeedbackByBusinessIdWithFullData(businessId: string): Promise<Feedback[]> {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return feedbacks.filter(f => f.businessId === businessId);
+}
+
 
 export async function getCustomersByBusinessId(businessId: string): Promise<Customer[]> {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -326,12 +330,12 @@ export async function addFeedback(businessId: string, data: { feedbackValues: Fe
     };
     feedbacks.push(newFeedback);
     
-    // Update business stats, but only for low ratings on the primary rating field
-    if (primaryRatingValue > 0 && primaryRatingValue < 4) {
-        const totalRating = (business.avgRating * business.reviews) + primaryRatingValue;
-        business.reviews += 1;
-        business.avgRating = totalRating / business.reviews;
-    }
+    // Update business stats
+    const allFeedbacksForBusiness = feedbacks.filter(f => f.businessId === businessId);
+    const totalRating = allFeedbacksForBusiness.reduce((acc, f) => acc + f.rating, 0);
+    business.avgRating = totalRating / allFeedbacksForBusiness.length;
+    business.reviews = allFeedbacksForBusiness.filter(f => f.rating < 4).length;
+
 
     return newFeedback;
 }

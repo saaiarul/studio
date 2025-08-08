@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,7 +46,7 @@ export function FeedbackTable({ feedback }: FeedbackTableProps) {
     <Card className="shadow-lg">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Recent Feedback</CardTitle>
+          <CardTitle>Recent Negative Feedback</CardTitle>
           <CardDescription>
             Here's what customers with a rating of less than 4 said about you.
           </CardDescription>
@@ -65,6 +66,13 @@ export function FeedbackTable({ feedback }: FeedbackTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {feedback.length === 0 && (
+                <TableRow>
+                    <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
+                        No negative feedback to display. Great job!
+                    </TableCell>
+                </TableRow>
+            )}
             {feedback.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>

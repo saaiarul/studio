@@ -12,6 +12,7 @@ import {
   QrCode,
   Settings,
   Users,
+  BarChart3,
 } from 'lucide-react';
 
 import {
@@ -52,6 +53,7 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
 
   const companyNav = businessId ? [
     { name: 'Dashboard', href: `/dashboard/${businessId}`, icon: Home },
+    { name: 'Analytics', href: `/dashboard/${businessId}/analytics`, icon: BarChart3 },
     { name: 'Customers', href: `/dashboard/${businessId}/customers`, icon: Users },
     { name: 'Messaging', href: `/dashboard/${businessId}/messaging`, icon: MessageCircle },
     { name: 'Settings', href: `/dashboard/${businessId}/settings`, icon: Settings },
@@ -71,7 +73,7 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
     
     // For nested routes, we want the parent to be active.
     // e.g. if we are on /dashboard/123/customers, the /dashboard/123 nav item should not be active.
-    // but if we are on /dashboard/123, it should be active.
+    // but if we are on /dashboard/12axcsd, it should be active.
     if (pathname.startsWith(itemHref) && pathname.split('/').length === itemHref.split('/').length) return true;
     
     // special case for dashboard, since it has no sub-slug
@@ -131,7 +133,7 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
                   <div className="flex items-center gap-3">
                     <Avatar className="w-9 h-9">
                         <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                        <AvatarFallback>{user.name.charAt(0)}</Fallback>
                     </Avatar>
                     <div className="text-sm hidden md:block">
                         <div className="font-medium">{user.name}</div>
