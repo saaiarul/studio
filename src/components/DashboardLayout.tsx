@@ -67,23 +67,17 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
     avatar: role === 'admin' ? 'https://placehold.co/100x100/64B5F6/FFFFFF/png' : 'https://placehold.co/100x100/26A69A/FFFFFF/png'
   }
 
-  const isNavItemActive = (itemHref: string) => {
-    // Exact match
-    if (pathname === itemHref) return true;
-    
-    // For nested routes, we want the parent to be active.
-    // e.g. if we are on /dashboard/123/customers, the /dashboard/123 nav item should not be active.
-    // but if we are on /dashboard/12axcsd, it should be active.
-    if (pathname.startsWith(itemHref) && pathname.split('/').length === itemHref.split('/').length) return true;
-    
-    // special case for dashboard, since it has no sub-slug
-     if (itemHref.includes(businessId || '') && pathname.endsWith(businessId || '')) {
-       return true
-     }
-
-
+  const isNavItemActive = (href: string) => {
+    // Exact match for non-dashboard routes
+    if (href !== `/dashboard/${businessId}` && pathname === href) {
+        return true;
+    }
+    // Special case for the main dashboard page to avoid matching its children
+    if (href === `/dashboard/${businessId}` && pathname === href) {
+        return true;
+    }
     return false;
-  }
+  };
 
   return (
     <SidebarProvider>
@@ -113,9 +107,11 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
           <SidebarFooter className="p-4 border-t border-white/10">
              <SidebarMenu>
                  <SidebarMenuItem>
-                    <SidebarMenuButton className="hover:bg-white/10 text-white/80">
-                        <LogOut className="w-5 h-5"/>
-                        <Link href="/">Logout</Link>
+                    <SidebarMenuButton asChild className="hover:bg-white/10 text-white/80">
+                        <Link href="/">
+                            <LogOut className="w-5 h-5"/>
+                            <span>Logout</span>
+                        </Link>
                     </SidebarMenuButton>
                  </SidebarMenuItem>
              </SidebarMenu>
