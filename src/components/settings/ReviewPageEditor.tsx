@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getBusinessById, updateBusiness, ReviewPageTheme, ReviewFormField } from "@/lib/data";
 import { Switch } from "../ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import { cn } from "@/lib/utils";
 
 type ReviewPageEditorProps = {
     businessId: string;
@@ -35,6 +36,8 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
         buttonColor: '#50E3C2',
         buttonTextColor: '#FFFFFF',
     });
+
+    const [draggedFieldId, setDraggedFieldId] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchBusinessData = async () => {
@@ -81,6 +84,35 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
         setFormFields(prev => prev.filter(field => field.id !== id));
     };
 
+    const handleDragStart = (e: React.DragEvent<HTMLDivElement>, id: string) => {
+        setDraggedFieldId(id);
+        e.dataTransfer.effectAllowed = "move";
+    };
+
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+    };
+
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetId: string) => {
+        e.preventDefault();
+        if (draggedFieldId === null || draggedFieldId === targetId) {
+            setDraggedFieldId(null);
+            return;
+        }
+
+        const draggedIndex = formFields.findIndex(f => f.id === draggedFieldId);
+        const targetIndex = formFields.findIndex(f => f.id === targetId);
+
+        if (draggedIndex > -1 && targetIndex > -1) {
+            const newFields = [...formFields];
+            const [draggedItem] = newFields.splice(draggedIndex, 1);
+            newFields.splice(targetIndex, 0, draggedItem);
+            setFormFields(newFields);
+        }
+
+        setDraggedFieldId(null);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -210,8 +242,21 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0 space-y-4">
                                     {formFields.map((field) => (
-                                        <Card key={field.id} className="p-4">
-                                            <div className="flex items-start gap-4">
+                                        <div
+                                            key={field.id}
+                                            draggable
+                                            onDragStart={(e) => handleDragStart(e, field.id)}
+                                            onDragOver={handleDragOver}
+                                            onDrop={(e) => handleDrop(e, field.id)}
+                                            className={cn(
+                                                "p-4 rounded-md bg-background border transition-opacity",
+                                                draggedFieldId === field.id && "opacity-50"
+                                            )}
+                                        >
+                                            <div className="flex items-start gap-2">
+                                                <button type="button" className="cursor-move p-2 -ml-2">
+                                                    <GripVertical className="w-4 h-4 text-muted-foreground" />
+                                                </button>
                                                 <div className="flex-1 space-y-2">
                                                     <div className="flex items-center gap-2">
                                                         {field.type === 'rating' ? <Star className="w-4 h-4 text-muted-foreground" /> : <MessageSquare className="w-4 h-4 text-muted-foreground" />}
@@ -234,7 +279,7 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
                                                     <Trash2 className="w-4 h-4" />
                                                 </Button>
                                             </div>
-                                        </Card>
+                                        </div>
                                     ))}
                                     {formFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Add fields to build your form.</p>}
                                 </CardContent>
@@ -298,3 +343,5 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
         </TooltipProvider>
     );
 }
+
+    
