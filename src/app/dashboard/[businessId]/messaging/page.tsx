@@ -26,7 +26,7 @@ export default async function MessagingPage({ params }: MessagingPageProps) {
                 <h1 className="text-3xl font-bold font-headline">Messaging</h1>
                 <p className="text-muted-foreground">Send messages to your customers for {companyData.name}.</p>
             </div>
-            <MessagingComposer customers={customers} />
+            <MessagingComposer customers={customers} credits={companyData.credits} />
         </div>
     </DashboardLayout>
   );

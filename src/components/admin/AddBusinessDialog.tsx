@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -15,29 +16,39 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PlusCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { createBusiness } from '@/lib/data';
 
 export function AddBusinessDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     const formData = new FormData(e.currentTarget);
-    const businessName = formData.get('businessName');
-    const ownerEmail = formData.get('ownerEmail');
+    const businessName = formData.get('businessName') as string;
+    const ownerEmail = formData.get('ownerEmail') as string;
 
-    // Mock API call
-    setTimeout(() => {
-      console.log('Creating business:', { businessName, ownerEmail });
-      toast({
-        title: "Business Created",
-        description: `${businessName} has been added to the platform.`,
-      });
-      setIsLoading(false);
-      setIsOpen(false);
-    }, 1500);
+    try {
+        await createBusiness({ businessName, ownerEmail });
+        toast({
+            title: "Application Submitted",
+            description: `${businessName} has been added and is pending approval.`,
+        });
+        setIsLoading(false);
+        setIsOpen(false);
+        // Refresh page data
+        router.refresh();
+    } catch(error) {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Could not create the business.",
+        });
+        setIsLoading(false);
+    }
   };
 
   return (
@@ -53,7 +64,7 @@ export function AddBusinessDialog() {
           <DialogHeader>
             <DialogTitle>Add New Business</DialogTitle>
             <DialogDescription>
-              Enter the details for the new business. An account will be created for the owner.
+              Enter the details for the new business. The application will be set to 'pending' for approval.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -72,7 +83,7 @@ export function AddBusinessDialog() {
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Creating...' : 'Create Business'}
+              {isLoading ? 'Submitting...' : 'Submit Application'}
             </Button>
           </DialogFooter>
         </form>

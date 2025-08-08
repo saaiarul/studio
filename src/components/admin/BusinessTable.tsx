@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -14,7 +15,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { MoreHorizontal, Download } from 'lucide-react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+  } from "@/components/ui/select"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -32,17 +41,9 @@ import {
     DialogTrigger,
   } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { updateBusiness } from '@/lib/data';
+import { updateBusiness, Business, BusinessStatus } from '@/lib/data';
+import { cn } from '@/lib/utils';
 
-type Business = {
-  id: string;
-  name: string;
-  ownerEmail: string;
-  password?: string;
-  reviews: number;
-  avgRating: number;
-  reviewUrl: string;
-};
 
 type BusinessTableProps = {
   businesses: Business[];
@@ -54,12 +55,19 @@ enum DialogType {
     NONE
 }
 
+const statusVariant: Record<BusinessStatus, "default" | "secondary" | "destructive"> = {
+    approved: "default",
+    pending: "secondary",
+    rejected: "destructive",
+}
+
 export function BusinessTable({ businesses: initialBusinesses }: BusinessTableProps) {
   const [businesses, setBusinesses] = useState(initialBusinesses);
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
   const [dialogType, setDialogType] = useState<DialogType>(DialogType.NONE);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const qrCodeApiUrl = selectedBusiness ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(selectedBusiness.reviewUrl)}` : '';
 
@@ -72,8 +80,10 @@ export function BusinessTable({ businesses: initialBusinesses }: BusinessTablePr
     const name = formData.get('businessName') as string;
     const ownerEmail = formData.get('ownerEmail') as string;
     const password = formData.get('password') as string;
+    const status = formData.get('status') as BusinessStatus;
+    const credits = formData.get('credits') as string;
 
-    const updateData: Partial<Business> = { name, ownerEmail };
+    const updateData: Partial<Business> = { name, ownerEmail, status, credits: parseInt(credits, 10) };
     if (password) {
         updateData.password = password;
     }
@@ -86,6 +96,7 @@ export function BusinessTable({ businesses: initialBusinesses }: BusinessTablePr
             title: "Business Updated",
             description: `${name} has been updated.`,
         });
+        router.refresh();
     } else {
         toast({
             variant: "destructive",
@@ -115,9 +126,9 @@ export function BusinessTable({ businesses: initialBusinesses }: BusinessTablePr
             <TableHeader>
                 <TableRow>
                 <TableHead>Company Name</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Credits</TableHead>
                 <TableHead>Owner Email</TableHead>
-                <TableHead>Total Feedback</TableHead>
-                <TableHead>Avg. Rating</TableHead>
                 <TableHead>
                     <span className="sr-only">Actions</span>
                 </TableHead>
@@ -136,9 +147,11 @@ export function BusinessTable({ businesses: initialBusinesses }: BusinessTablePr
                             </Button>
                         </DialogTrigger>
                     </TableCell>
+                    <TableCell>
+                        <Badge variant={statusVariant[business.status]} className="capitalize">{business.status}</Badge>
+                    </TableCell>
+                    <TableCell>{business.credits}</TableCell>
                     <TableCell>{business.ownerEmail}</TableCell>
-                    <TableCell>{business.reviews}</TableCell>
-                    <TableCell>{business.avgRating.toFixed(1)}</TableCell>
                     <TableCell>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -201,7 +214,7 @@ export function BusinessTable({ businesses: initialBusinesses }: BusinessTablePr
                         <DialogHeader>
                             <DialogTitle>Edit {selectedBusiness.name}</DialogTitle>
                             <DialogDescription>
-                                Update the business details. Leave password blank to keep it unchanged.
+                                Update the business details, status, and credits.
                             </DialogDescription>
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
@@ -212,6 +225,23 @@ export function BusinessTable({ businesses: initialBusinesses }: BusinessTablePr
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="ownerEmail" className="text-right">Owner's Email</Label>
                                 <Input id="ownerEmail" name="ownerEmail" type="email" defaultValue={selectedBusiness.ownerEmail} required className="col-span-3" />
+                            </div>
+                             <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="credits" className="text-right">Credits</Label>
+                                <Input id="credits" name="credits" type="number" defaultValue={selectedBusiness.credits} required className="col-span-3" />
+                            </div>
+                             <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="status" className="text-right">Status</Label>
+                                <Select name="status" defaultValue={selectedBusiness.status}>
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue placeholder="Select status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="pending">Pending</SelectItem>
+                                        <SelectItem value="approved">Approved</SelectItem>
+                                        <SelectItem value="rejected">Rejected</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="password" className="text-right">New Password</Label>

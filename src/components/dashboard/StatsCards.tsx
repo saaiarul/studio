@@ -1,16 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Star, MessageSquare } from 'lucide-react';
+import { Star, MessageSquare, CreditCard } from 'lucide-react';
+import { Button } from '../ui/button';
 
 type StatsCardsProps = {
   stats: {
     totalReviews: number;
     averageRating: number;
+    credits: number;
   };
 };
 
 export function StatsCards({ stats }: StatsCardsProps) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid gap-4 sm:grid-cols-3">
       <Card className="shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Feedback</CardTitle>
@@ -29,6 +31,18 @@ export function StatsCards({ stats }: StatsCardsProps) {
         <CardContent>
           <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</div>
           <p className="text-xs text-muted-foreground">Based on collected feedback</p>
+        </CardContent>
+      </Card>
+      <Card className="shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Message Credits</CardTitle>
+          <CreditCard className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats.credits}</div>
+          <Button size="sm" variant="secondary" className="text-xs mt-1 h-auto py-0.5 px-2">
+            Buy More
+          </Button>
         </CardContent>
       </Card>
     </div>

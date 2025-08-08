@@ -3,7 +3,9 @@
 
 import { format, subDays } from 'date-fns';
 
-type Business = {
+export type BusinessStatus = 'approved' | 'pending' | 'rejected';
+
+export type Business = {
     id: string;
     name: string;
     ownerEmail: string;
@@ -12,6 +14,8 @@ type Business = {
     avgRating: number;
     reviewUrl: string;
     googleReviewLink: string;
+    status: BusinessStatus;
+    credits: number;
 };
 
 type Feedback = {
@@ -42,7 +46,9 @@ let businesses: Business[] = [
         reviews: 0, 
         avgRating: 0, 
         reviewUrl: 'http://localhost:3000/review/comp-123',
-        googleReviewLink: 'https://g.page/r/some-google-link/review'
+        googleReviewLink: 'https://g.page/r/some-google-link/review',
+        status: 'approved',
+        credits: 100
     },
     { 
         id: 'comp-456', 
@@ -52,7 +58,9 @@ let businesses: Business[] = [
         reviews: 0, 
         avgRating: 0, 
         reviewUrl: 'http://localhost:3000/review/comp-456',
-        googleReviewLink: 'https://www.google.com'
+        googleReviewLink: 'https://www.google.com',
+        status: 'approved',
+        credits: 50
     },
     { 
         id: 'comp-789', 
@@ -62,7 +70,9 @@ let businesses: Business[] = [
         reviews: 0, 
         avgRating: 0, 
         reviewUrl: 'http://localhost:3000/review/comp-789',
-        googleReviewLink: 'https://www.google.com'
+        googleReviewLink: 'https://www.google.com',
+        status: 'pending',
+        credits: 0
     },
 ];
 
@@ -71,8 +81,9 @@ let customers: Customer[] = [];
 
 // Function to generate and reset mock data
 const generateMockData = () => {
-    // Reset data
-    businesses = businesses.map(b => ({ ...b, reviews: 0, avgRating: 0 }));
+    // Reset data, but keep statuses and credits for demo purposes
+    const businessBase = businesses.map(b => ({ ...b, reviews: 0, avgRating: 0 }));
+    businesses = businessBase;
     feedbacks = [];
     customers = [];
 
@@ -146,6 +157,25 @@ export async function getBusinessById(id: string) {
     await new Promise(resolve => setTimeout(resolve, 100));
     return businesses.find(b => b.id === id) || null;
 }
+
+export async function createBusiness(data: { businessName: string, ownerEmail: string }): Promise<Business> {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const newBusiness: Business = {
+        id: `comp-${Date.now()}`,
+        name: data.businessName,
+        ownerEmail: data.ownerEmail,
+        password: `password-${Math.random().toString(36).substring(2, 10)}`, // Generate random password
+        reviews: 0,
+        avgRating: 0,
+        reviewUrl: `http://localhost:3000/review/comp-${Date.now()}`,
+        googleReviewLink: '',
+        status: 'pending',
+        credits: 0,
+    };
+    businesses.push(newBusiness);
+    return newBusiness;
+}
+
 
 export async function updateBusiness(id: string, data: Partial<Omit<Business, 'id'>>) {
     // Simulate network delay and update

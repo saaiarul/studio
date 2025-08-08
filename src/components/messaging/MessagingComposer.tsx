@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ImagePlus, Send, Users, User, KeyRound } from 'lucide-react';
+import { ImagePlus, Send, Users, User, KeyRound, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Select,
@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 type Customer = {
   id: string;
@@ -24,9 +25,10 @@ type Customer = {
 
 type MessagingComposerProps = {
   customers: Customer[];
+  credits: number;
 };
 
-export function MessagingComposer({ customers }: MessagingComposerProps) {
+export function MessagingComposer({ customers, credits: initialCredits }: MessagingComposerProps) {
   const { toast } = useToast();
   const [message, setMessage] = useState('');
   const [image, setImage] = useState<File | null>(null);
@@ -34,6 +36,9 @@ export function MessagingComposer({ customers }: MessagingComposerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [isSavingKey, setIsSavingKey] = useState(false);
+  const [credits, setCredits] = useState(initialCredits);
+
+  const hasCredits = credits > 0;
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -43,12 +48,21 @@ export function MessagingComposer({ customers }: MessagingComposerProps) {
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasCredits) {
+        toast({
+            variant: "destructive",
+            title: "No Credits Left",
+            description: "Please purchase more credits to send messages.",
+        });
+        return;
+    }
     setIsLoading(true);
 
     setTimeout(() => {
+        setCredits(prev => prev - 1); // Deduct credit
         toast({
             title: "Message Sent!",
-            description: `Your message has been queued for delivery to ${recipient === 'all' ? 'all customers' : 'the selected customer'}.`,
+            description: `Your message has been queued. Credits remaining: ${credits - 1}`,
         });
         setMessage('');
         setImage(null);
@@ -76,10 +90,19 @@ export function MessagingComposer({ customers }: MessagingComposerProps) {
           <CardHeader>
             <CardTitle>Compose Message</CardTitle>
             <CardDescription>
-              Create and send a message with text and an optional image to your customers.
+              Create and send a message to your customers. Each message costs 1 credit.
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {!hasCredits && (
+                 <Alert variant="destructive" className="mb-6">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Out of Credits</AlertTitle>
+                    <AlertDescription>
+                        You have no message credits left. Please buy more to continue sending messages.
+                    </AlertDescription>
+                </Alert>
+            )}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="recipient">Recipient</Label>
@@ -145,9 +168,9 @@ export function MessagingComposer({ customers }: MessagingComposerProps) {
                 </div>
               </div>
 
-              <Button type="submit" className="bg-accent hover:bg-accent/90" disabled={isLoading}>
+              <Button type="submit" className="bg-accent hover:bg-accent/90" disabled={isLoading || !hasCredits}>
                 <Send className="mr-2" />
-                {isLoading ? 'Sending...' : 'Send Message'}
+                {isLoading ? 'Sending...' : `Send Message (${credits} credits left)`}
               </Button>
             </form>
           </CardContent>

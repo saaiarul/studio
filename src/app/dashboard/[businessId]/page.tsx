@@ -6,6 +6,10 @@ import { GoogleLinkCard } from '@/components/dashboard/GoogleLinkCard';
 import { getBusinessById, getFeedbackByBusinessId } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import { FeedbackChart } from '@/components/dashboard/FeedbackChart';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Rocket } from 'lucide-react';
 
 type DashboardPageProps = {
     params: {
@@ -19,12 +23,35 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   if (!companyData) {
     notFound();
   }
+  
+  if (companyData.status !== 'approved') {
+    return (
+       <DashboardLayout role="company">
+           <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle>Account Pending Approval</CardTitle>
+                    <CardDescription>Your account is currently under review by our team.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Alert>
+                      <Rocket className="h-4 w-4" />
+                      <AlertTitle>Hold Tight!</AlertTitle>
+                      <AlertDescription>
+                        You will receive an email notification once your application has been approved. You'll then be able to access all features of the dashboard.
+                      </AlertDescription>
+                    </Alert>
+                </CardContent>
+           </Card>
+       </DashboardLayout>
+    )
+  }
 
   const feedback = await getFeedbackByBusinessId(params.businessId);
 
   const reviewStats = {
     totalReviews: companyData.reviews,
     averageRating: companyData.avgRating,
+    credits: companyData.credits,
   };
 
 
