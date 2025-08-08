@@ -115,7 +115,7 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
                                 <div className="flex items-center gap-4">
                                      <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                                         {logoUrl ? (
-                                            <Image src={logoUrl} alt="logo" width={80} height={80} className="object-cover" data-ai-hint="logo"/>
+                                            <Image src={logoUrl} alt="logo" width={80} height={80} className="object-cover w-20 h-20" data-ai-hint="logo"/>
                                         ) : (
                                             <UploadCloud className="w-8 h-8 text-muted-foreground" />
                                         )}
@@ -193,7 +193,7 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
                             <div className="w-full max-w-sm mx-auto space-y-8">
                                 {logoUrl && (
                                      <div className="flex justify-center">
-                                        <Image src={logoUrl} alt="preview logo" width={80} height={80} className="rounded-full object-contain" data-ai-hint="logo"/>
+                                        <Image src={logoUrl} alt="preview logo" width={80} height={80} className="rounded-full object-cover w-20 h-20" data-ai-hint="logo"/>
                                     </div>
                                 )}
                                 <CardTitle className="text-xl text-center" style={{ color: theme.textColor }}>{welcomeMessage}</CardTitle>

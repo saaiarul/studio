@@ -55,7 +55,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
                                 alt={`${business.name} Logo`}
                                 width={100}
                                 height={100}
-                                className="rounded-full object-contain"
+                                className="rounded-full object-cover w-[100px] h-[100px]"
                                 data-ai-hint="logo"
                             />
                         </div>

@@ -60,7 +60,7 @@ let businesses: Business[] = [
         googleReviewLink: 'https://g.page/r/some-google-link/review',
         status: 'approved',
         credits: 100,
-        logoUrl: '/logo-placeholder.png',
+        logoUrl: 'https://placehold.co/100x100.png',
         welcomeMessage: 'Thanks for visiting The Happy Cafe! We hope you enjoyed your time with us.',
         theme: {
             primaryColor: '#4A90E2', // A friendly blue
