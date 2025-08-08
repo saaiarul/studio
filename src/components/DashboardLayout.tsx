@@ -47,25 +47,32 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
   const pathname = usePathname();
   const businessId = role === 'company' ? pathname.split('/')[2] : null;
 
-  const adminNav = [
-    { name: 'Dashboard', href: '/admin', icon: Home },
-  ];
+  let navItems;
+  let user;
 
-  const companyNav = businessId ? [
-    { name: 'Dashboard', href: `/dashboard/${businessId}`, icon: Home },
-    { name: 'Analytics', href: `/dashboard/${businessId}/analytics`, icon: BarChart3 },
-    { name: 'Customers', href: `/dashboard/${businessId}/customers`, icon: Users },
-    { name: 'Messaging', href: `/dashboard/${businessId}/messaging`, icon: MessageCircle },
-    { name: 'Settings', href: `/dashboard/${businessId}/settings`, icon: Settings },
-  ] : [];
-
-  const navItems = role === 'admin' ? adminNav : companyNav;
-  
-  const user = {
-    name: role === 'admin' ? 'Admin User' : 'Company User',
-    email: role === 'admin' ? 'admin@reviewroute.com' : 'company@reviewroute.com',
-    avatar: role === 'admin' ? 'https://placehold.co/100x100/64B5F6/FFFFFF/png' : 'https://placehold.co/100x100/26A69A/FFFFFF/png'
-  };
+  if (role === 'admin') {
+    navItems = [
+      { name: 'Dashboard', href: '/admin', icon: Home },
+    ];
+    user = {
+      name: 'Admin User',
+      email: 'admin@reviewroute.com',
+      avatar: 'https://placehold.co/100x100/64B5F6/FFFFFF/png'
+    };
+  } else {
+    navItems = businessId ? [
+      { name: 'Dashboard', href: `/dashboard/${businessId}`, icon: Home },
+      { name: 'Analytics', href: `/dashboard/${businessId}/analytics`, icon: BarChart3 },
+      { name: 'Customers', href: `/dashboard/${businessId}/customers`, icon: Users },
+      { name: 'Messaging', href: `/dashboard/${businessId}/messaging`, icon: MessageCircle },
+      { name: 'Settings', href: `/dashboard/${businessId}/settings`, icon: Settings },
+    ] : [];
+    user = {
+      name: 'Company User',
+      email: 'company@reviewroute.com',
+      avatar: 'https://placehold.co/100x100/26A69A/FFFFFF/png'
+    };
+  }
 
   return (
     <SidebarProvider>
@@ -117,7 +124,7 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
                   <div className="flex items-center gap-3">
                     <Avatar className="w-9 h-9">
                         <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback>{user.name.charAt(0)}</Fallback>
+                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="text-sm hidden md:block">
                         <div className="font-medium">{user.name}</div>
