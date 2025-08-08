@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -37,7 +38,14 @@ export function ReviewFlow({ business }: ReviewFlowProps) {
             case "details":
                 return <CustomerDetailsForm business={business} onDetailsSubmitted={handleDetailsSubmitted} />;
             case "review":
-                return customer && <ReviewForm businessId={business.id} googleReviewLink={business.googleReviewLink} onReviewSubmitted={handleReviewSubmitted} customerName={customer.name} />;
+                return customer && <ReviewForm 
+                    businessId={business.id} 
+                    googleReviewLink={business.googleReviewLink} 
+                    onReviewSubmitted={handleReviewSubmitted} 
+                    customerName={customer.name}
+                    isRatingOptional={business.isRatingOptional}
+                    isCommentRequired={business.isCommentRequired}
+                />;
             case "coupon":
                 return (
                     <div className="text-center p-8 space-y-6 animate-in fade-in-50 duration-500">

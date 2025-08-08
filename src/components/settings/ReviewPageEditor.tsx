@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "../ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Eye, Save, Palette, UploadCloud } from "lucide-react";
+import { Eye, Save, Palette, UploadCloud, HelpCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getBusinessById, updateBusiness, ReviewPageTheme } from "@/lib/data";
+import { Switch } from "../ui/switch";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 type ReviewPageEditorProps = {
     businessId: string;
@@ -23,6 +26,8 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
     const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [welcomeMessage, setWelcomeMessage] = useState("");
+    const [isRatingOptional, setIsRatingOptional] = useState(false);
+    const [isCommentRequired, setIsCommentRequired] = useState(false);
     const [theme, setTheme] = useState<ReviewPageTheme>({
         primaryColor: '#4A90E2',
         backgroundColor: '#F5F8FA',
@@ -38,6 +43,8 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
             if (business) {
                 setWelcomeMessage(business.welcomeMessage || `Leave a review for ${business.name}`);
                 setLogoUrl(business.logoUrl);
+                setIsRatingOptional(business.isRatingOptional || false);
+                setIsCommentRequired(business.isCommentRequired || false);
                 if(business.theme) setTheme(business.theme);
             }
             setIsFetching(false);
@@ -74,7 +81,9 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
             await updateBusiness(businessId, {
                 welcomeMessage,
                 logoUrl: uploadedLogoUrl,
-                theme
+                theme,
+                isRatingOptional,
+                isCommentRequired
             });
             toast({
                 title: "Settings Saved",
@@ -100,10 +109,11 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
     }
 
     return (
+        <TooltipProvider>
         <Card className="shadow-lg">
             <CardHeader>
                 <CardTitle>Review Page Customization</CardTitle>
-                <CardDescription>Personalize the review page with your own branding and colors.</CardDescription>
+                <CardDescription>Personalize the review page with your own branding, colors, and form options.</CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit}>
@@ -168,6 +178,52 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
                                     ))}
                                 </CardContent>
                             </Card>
+
+                             <Card>
+                                <CardHeader className="p-4">
+                                    <CardTitle className="text-base m-0 flex items-center gap-2">
+                                        Form Options
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-4 pt-0 space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Label htmlFor="ratingOptional">Make Star Rating Optional</Label>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>If enabled, users can submit the form without selecting a rating.</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </div>
+                                        <Switch
+                                            id="ratingOptional"
+                                            checked={isRatingOptional}
+                                            onCheckedChange={setIsRatingOptional}
+                                        />
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                        <Label htmlFor="commentRequired">Make Comment Required</Label>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>If enabled, users must write a comment to submit the form.</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </div>
+                                        <Switch
+                                            id="commentRequired"
+                                            checked={isCommentRequired}
+                                            onCheckedChange={setIsCommentRequired}
+                                        />
+                                    </div>
+                                </CardContent>
+                            </Card>
                             
                             <div className="flex gap-2 pt-4">
                                 <Button type="submit" disabled={isLoading} className="bg-accent hover:bg-accent/90">
@@ -199,10 +255,14 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
                                 <CardTitle className="text-xl text-center" style={{ color: theme.textColor }}>{welcomeMessage}</CardTitle>
                                 
                                 <div className="text-center">
-                                    <Label className="text-base" style={{ opacity: 0.9 }}>How was your experience?</Label>
+                                    <Label className="text-base" style={{ opacity: 0.9 }}>How was your experience? {isRatingOptional && "(Optional)"}</Label>
                                     <div className="flex justify-center mt-2">
                                         <p style={{color: theme.primaryColor}}>★★★★★</p>
                                     </div>
+                                </div>
+                                <div className="text-left">
+                                    <Label className="text-base" style={{ opacity: 0.9 }}>Tell us more {isCommentRequired ? "(Required)" : "(Optional)"}</Label>
+                                    <div className="mt-2 w-full h-20 rounded-md bg-white/20 p-2 border border-white/30"></div>
                                 </div>
                                 
                                 <Button className="w-full" style={{backgroundColor: theme.buttonColor, color: theme.buttonTextColor}} disabled>
@@ -214,5 +274,6 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
                 </form>
             </CardContent>
         </Card>
+        </TooltipProvider>
     );
 }

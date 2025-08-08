@@ -1,3 +1,4 @@
+
 // In a real app, this data would be fetched from a database.
 // We're using a static list here for demonstration purposes.
 
@@ -27,6 +28,8 @@ export type Business = {
     logoUrl?: string;
     welcomeMessage?: string;
     theme?: ReviewPageTheme;
+    isRatingOptional?: boolean;
+    isCommentRequired?: boolean;
 };
 
 type Feedback = {
@@ -60,7 +63,7 @@ let businesses: Business[] = [
         googleReviewLink: 'https://g.page/r/some-google-link/review',
         status: 'approved',
         credits: 100,
-        logoUrl: 'https://placehold.co/100x100.png',
+        logoUrl: 'https://placehold.co/100x100/A67B5B/FFFFFF/png',
         welcomeMessage: 'Thanks for visiting The Happy Cafe! We hope you enjoyed your time with us.',
         theme: {
             primaryColor: '#4A90E2', // A friendly blue
@@ -68,7 +71,9 @@ let businesses: Business[] = [
             textColor: '#333333',
             buttonColor: '#50E3C2', // A vibrant teal
             buttonTextColor: '#FFFFFF',
-        }
+        },
+        isRatingOptional: false,
+        isCommentRequired: false,
     },
     { 
         id: 'comp-456', 
@@ -80,7 +85,9 @@ let businesses: Business[] = [
         reviewUrl: 'http://localhost:3000/review/comp-456',
         googleReviewLink: 'https://www.google.com',
         status: 'approved',
-        credits: 50
+        credits: 50,
+        isRatingOptional: false,
+        isCommentRequired: false,
     },
     { 
         id: 'comp-789', 
@@ -92,7 +99,9 @@ let businesses: Business[] = [
         reviewUrl: 'http://localhost:3000/review/comp-789',
         googleReviewLink: 'https://www.google.com',
         status: 'pending',
-        credits: 0
+        credits: 0,
+        isRatingOptional: false,
+        isCommentRequired: false,
     },
 ];
 

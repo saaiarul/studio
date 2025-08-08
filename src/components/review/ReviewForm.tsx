@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -14,9 +15,11 @@ type ReviewFormProps = {
   googleReviewLink: string;
   customerName: string;
   onReviewSubmitted: () => void;
+  isRatingOptional?: boolean;
+  isCommentRequired?: boolean;
 };
 
-export function ReviewForm({ businessId, googleReviewLink, onReviewSubmitted, customerName }: ReviewFormProps) {
+export function ReviewForm({ businessId, googleReviewLink, onReviewSubmitted, customerName, isRatingOptional = false, isCommentRequired = false }: ReviewFormProps) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -25,13 +28,22 @@ export function ReviewForm({ businessId, googleReviewLink, onReviewSubmitted, cu
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (rating === 0) {
+    if (rating === 0 && !isRatingOptional) {
       toast({
         variant: 'destructive',
         title: 'Please select a rating',
         description: 'You must select at least one star.',
       });
       return;
+    }
+
+    if (comment.length === 0 && isCommentRequired) {
+        toast({
+          variant: 'destructive',
+          title: 'Please leave a comment',
+          description: 'A comment is required to submit your feedback.',
+        });
+        return;
     }
 
     setIsLoading(true);
@@ -58,6 +70,8 @@ export function ReviewForm({ businessId, googleReviewLink, onReviewSubmitted, cu
     }
   };
 
+  const isSubmitDisabled = isLoading || (!isRatingOptional && rating === 0) || (isCommentRequired && comment.length === 0);
+
   const textColor = { color: 'var(--page-text)' };
   const mutedTextColor = { color: 'var(--page-text)', opacity: 0.9 };
   const inputStyle = {
@@ -76,25 +90,28 @@ export function ReviewForm({ businessId, googleReviewLink, onReviewSubmitted, cu
         <h3 className="text-xl font-semibold text-center mb-4" style={textColor}>Thanks, {customerName}!</h3>
         <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2 text-center">
-            <Label className="text-base" style={mutedTextColor}>How was your experience?</Label>
+            <Label className="text-base" style={mutedTextColor}>How was your experience? {isRatingOptional && <span className="text-xs">(Optional)</span>}</Label>
             <div className="flex justify-center">
             <StarRating rating={rating} onRatingChange={setRating} />
             </div>
         </div>
-        {rating > 0 && (
-            <div className="space-y-2 animate-in fade-in-50 duration-500">
-            <Label htmlFor="comment" style={mutedTextColor}>Tell us more (optional)</Label>
-            <Textarea
-                id="comment"
-                placeholder="What could we do better?"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="placeholder:text-white/60"
-                style={inputStyle}
-            />
-            </div>
-        )}
-        <Button type="submit" className="w-full" style={buttonStyle} disabled={isLoading || rating === 0}>
+        
+        <div className="space-y-2">
+        <Label htmlFor="comment" style={mutedTextColor}>
+            Tell us more {isCommentRequired ? <span className="text-xs">(Required)</span> : <span className="text-xs">(Optional)</span>}
+        </Label>
+        <Textarea
+            id="comment"
+            placeholder="What could we do better?"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            className="placeholder:text-white/60"
+            style={inputStyle}
+            required={isCommentRequired}
+        />
+        </div>
+
+        <Button type="submit" className="w-full" style={buttonStyle} disabled={isSubmitDisabled}>
             {isLoading ? 'Submitting...' : 'Submit Review'}
         </Button>
         </form>
