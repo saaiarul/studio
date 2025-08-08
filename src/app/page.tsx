@@ -70,7 +70,7 @@ export default function LoginPage() {
             <QrCode className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold font-headline text-black">ReviewRoute</h1>
           </div>
-          <CardTitle className="text-2xl font-headline text-black">Welcome Back</CardTitle>
+          <CardTitle className="text-2xl font-headline text-black">Unlock Your Dashboard</CardTitle>
           <CardDescription className="text-black/70">Enter your credentials to access your account</CardDescription>
         </CardHeader>
         <CardContent>
