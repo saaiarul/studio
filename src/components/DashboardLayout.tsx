@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -40,7 +41,7 @@ const adminNav = [
 const Logo = () => (
   <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary-foreground font-headline">
     <QrCode className="w-7 h-7" />
-    <span className="text-primary-foreground/90">ReviewRoute</span>
+    <span className="text-white/90">ReviewRoute</span>
   </Link>
 );
 
@@ -85,9 +86,9 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen">
-        <Sidebar className="bg-primary text-primary-foreground" collapsible="icon">
+        <Sidebar className="bg-gradient-to-br from-black via-blue-950 to-black bg-[length:200%_200%] animate-gradient text-white" collapsible="icon">
           <SidebarContent>
-            <SidebarHeader className="p-4 border-b border-primary-foreground/10">
+            <SidebarHeader className="p-4 border-b border-white/10">
               <Logo />
             </SidebarHeader>
             <SidebarMenu className="p-4">
@@ -96,7 +97,7 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
                   <SidebarMenuButton
                     asChild
                     isActive={isNavItemActive(item.href)}
-                    className="data-[active=true]:bg-primary-foreground/10 data-[active=true]:text-primary-foreground hover:bg-primary-foreground/10"
+                    className="data-[active=true]:bg-white/10 data-[active=true]:text-white hover:bg-white/10 text-white/80"
                   >
                     <Link href={item.href}>
                       <item.icon className="w-5 h-5" />
@@ -107,10 +108,10 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
               ))}
             </SidebarMenu>
           </SidebarContent>
-          <SidebarFooter className="p-4 border-t border-primary-foreground/10">
+          <SidebarFooter className="p-4 border-t border-white/10">
              <SidebarMenu>
                  <SidebarMenuItem>
-                    <SidebarMenuButton className="hover:bg-primary-foreground/10">
+                    <SidebarMenuButton className="hover:bg-white/10 text-white/80">
                         <LogOut className="w-5 h-5"/>
                         <Link href="/">Logout</Link>
                     </SidebarMenuButton>
