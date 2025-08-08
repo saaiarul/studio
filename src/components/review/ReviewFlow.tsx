@@ -43,8 +43,7 @@ export function ReviewFlow({ business }: ReviewFlowProps) {
                     googleReviewLink={business.googleReviewLink} 
                     onReviewSubmitted={handleReviewSubmitted} 
                     customerName={customer.name}
-                    isRatingOptional={business.isRatingOptional}
-                    isCommentRequired={business.isCommentRequired}
+                    formFields={business.reviewFormFields || []}
                 />;
             case "coupon":
                 return (

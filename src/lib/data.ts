@@ -1,4 +1,5 @@
 
+
 // In a real app, this data would be fetched from a database.
 // We're using a static list here for demonstration purposes.
 
@@ -14,8 +15,15 @@ export type ReviewPageTheme = {
     buttonTextColor: string;
 };
 
-export type Business = {
+export type ReviewFormField = {
     id: string;
+    type: 'rating' | 'comment';
+    label: string;
+    isOptional: boolean;
+};
+
+export type Business = {
+    id:string;
     name: string;
     ownerEmail: string;
     password?: string;
@@ -28,16 +36,21 @@ export type Business = {
     logoUrl?: string;
     welcomeMessage?: string;
     theme?: ReviewPageTheme;
-    isRatingOptional?: boolean;
-    isCommentRequired?: boolean;
+    reviewFormFields?: ReviewFormField[];
 };
 
-type Feedback = {
+export type FeedbackValue = {
+    fieldId: string;
+    value: number | string;
+};
+
+export type Feedback = {
     id: string;
     businessId: string;
     customerId: string;
-    rating: number;
-    comment: string;
+    values: FeedbackValue[];
+    comment: string; // Keep a primary comment for display
+    rating: number; // Keep a primary rating for display
     date: string;
 };
 
@@ -72,8 +85,10 @@ let businesses: Business[] = [
             buttonColor: '#50E3C2', // A vibrant teal
             buttonTextColor: '#FFFFFF',
         },
-        isRatingOptional: false,
-        isCommentRequired: false,
+        reviewFormFields: [
+            { id: 'rating-1', type: 'rating', label: 'How was your overall experience?', isOptional: false },
+            { id: 'comment-1', type: 'comment', label: 'Tell us more (Optional)', isOptional: true },
+        ],
     },
     { 
         id: 'comp-456', 
@@ -86,8 +101,10 @@ let businesses: Business[] = [
         googleReviewLink: 'https://www.google.com',
         status: 'approved',
         credits: 50,
-        isRatingOptional: false,
-        isCommentRequired: false,
+        reviewFormFields: [
+            { id: 'rating-1', type: 'rating', label: 'How was your visit?', isOptional: false },
+            { id: 'comment-1', type: 'comment', label: 'Any comments?', isOptional: false },
+        ]
     },
     { 
         id: 'comp-789', 
@@ -100,8 +117,10 @@ let businesses: Business[] = [
         googleReviewLink: 'https://www.google.com',
         status: 'pending',
         credits: 0,
-        isRatingOptional: false,
-        isCommentRequired: false,
+        reviewFormFields: [
+            { id: 'rating-1', type: 'rating', label: 'Rate your purchase', isOptional: false },
+            { id: 'comment-1', type: 'comment', label: 'Feedback', isOptional: true },
+        ]
     },
 ];
 
@@ -153,6 +172,7 @@ const generateMockData = () => {
                 customerId: customerId,
                 rating,
                 comment: mockComments[Math.floor(Math.random() * mockComments.length)],
+                values: [{ fieldId: business.reviewFormFields?.[0].id || 'rating-1', value: rating }],
                 date: date
             };
 
@@ -184,7 +204,15 @@ export async function getBusinesses(): Promise<Business[]> {
 export async function getBusinessById(id: string) {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 100));
-    return businesses.find(b => b.id === id) || null;
+    const business = businesses.find(b => b.id === id) || null;
+    // Add default form fields if they don't exist
+    if (business && !business.reviewFormFields) {
+        business.reviewFormFields = [
+            { id: 'rating-1', type: 'rating', label: 'How was your experience?', isOptional: false },
+            { id: 'comment-1', type: 'comment', label: 'Any comments?', isOptional: true },
+        ];
+    }
+    return business;
 }
 
 export async function createBusiness(data: { businessName: string, ownerEmail: string }): Promise<Business> {
@@ -201,6 +229,10 @@ export async function createBusiness(data: { businessName: string, ownerEmail: s
         googleReviewLink: '',
         status: 'pending',
         credits: 0,
+        reviewFormFields: [
+            { id: 'rating-1', type: 'rating', label: 'How was your experience?', isOptional: false },
+            { id: 'comment-1', type: 'comment', label: 'Any comments?', isOptional: true },
+        ],
     };
     businesses.push(newBusiness);
     return newBusiness;
@@ -218,15 +250,18 @@ export async function updateBusiness(id: string, data: Partial<Omit<Business, 'i
     return null;
 }
 
-export async function getFeedbackByBusinessId(businessId: string): Promise<Feedback[]> {
+export async function getFeedbackByBusinessId(businessId: string): Promise<Pick<Feedback, 'id'|'rating'|'comment'|'date'>[]> {
     await new Promise(resolve => setTimeout(resolve, 100));
     const businessFeedback = feedbacks.filter(f => f.businessId === businessId);
     
     const feedbackWithCustomer = businessFeedback.map(f => {
         const customer = customers.find(c => c.id === f.customerId);
         return {
-            ...f,
-            comment: `${customer?.name || 'Anonymous'}: ${f.comment}`
+            id: f.id,
+            rating: f.rating,
+            // For the table, we'll still show the primary comment.
+            comment: `${customer?.name || 'Anonymous'}: ${f.comment}`,
+            date: f.date
         }
     })
 
@@ -253,7 +288,7 @@ export async function addCustomer(businessId: string, data: { name: string, phon
     return newCustomer;
 }
 
-export async function addFeedback(businessId: string, data: { rating: number, comment: string, customerName: string }): Promise<Feedback> {
+export async function addFeedback(businessId: string, data: { feedbackValues: FeedbackValue[], customerName: string }): Promise<Feedback> {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     const business = businesses.find(b => b.id === businessId);
@@ -271,21 +306,29 @@ export async function addFeedback(businessId: string, data: { rating: number, co
 
     const customerId = customers.find(c => c.name === data.customerName && c.businessId === businessId)!.id;
 
+    // For dashboard display, we'll designate the first rating and comment as primary
+    const primaryRatingField = business.reviewFormFields?.find(f => f.type === 'rating');
+    const primaryCommentField = business.reviewFormFields?.find(f => f.type === 'comment');
+    
+    const primaryRatingValue = data.feedbackValues.find(v => v.fieldId === primaryRatingField?.id)?.value as number || 0;
+    const primaryCommentValue = data.feedbackValues.find(v => v.fieldId === primaryCommentField?.id)?.value as string || '';
+
 
     // Add new feedback
     const newFeedback: Feedback = {
         id: `fb-${Date.now()}-${Math.random()}`,
         businessId,
         customerId: customerId,
-        rating: data.rating,
-        comment: data.comment,
+        values: data.feedbackValues,
+        rating: primaryRatingValue,
+        comment: primaryCommentValue,
         date: format(new Date(), 'yyyy-MM-dd')
     };
     feedbacks.push(newFeedback);
     
-    // Update business stats, but only for low ratings
-    if (data.rating < 4) {
-        const totalRating = (business.avgRating * business.reviews) + data.rating;
+    // Update business stats, but only for low ratings on the primary rating field
+    if (primaryRatingValue > 0 && primaryRatingValue < 4) {
+        const totalRating = (business.avgRating * business.reviews) + primaryRatingValue;
         business.reviews += 1;
         business.avgRating = totalRating / business.reviews;
     }

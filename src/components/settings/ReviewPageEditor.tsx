@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "../ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Eye, Save, Palette, UploadCloud, HelpCircle } from "lucide-react";
+import { Eye, Save, Palette, UploadCloud, HelpCircle, GripVertical, Trash2, PlusCircle, Star, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getBusinessById, updateBusiness, ReviewPageTheme } from "@/lib/data";
+import { getBusinessById, updateBusiness, ReviewPageTheme, ReviewFormField } from "@/lib/data";
 import { Switch } from "../ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
@@ -26,8 +26,8 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
     const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [welcomeMessage, setWelcomeMessage] = useState("");
-    const [isRatingOptional, setIsRatingOptional] = useState(false);
-    const [isCommentRequired, setIsCommentRequired] = useState(false);
+    const [formFields, setFormFields] = useState<ReviewFormField[]>([]);
+    
     const [theme, setTheme] = useState<ReviewPageTheme>({
         primaryColor: '#4A90E2',
         backgroundColor: '#F5F8FA',
@@ -43,8 +43,7 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
             if (business) {
                 setWelcomeMessage(business.welcomeMessage || `Leave a review for ${business.name}`);
                 setLogoUrl(business.logoUrl);
-                setIsRatingOptional(business.isRatingOptional || false);
-                setIsCommentRequired(business.isCommentRequired || false);
+                setFormFields(business.reviewFormFields || []);
                 if(business.theme) setTheme(business.theme);
             }
             setIsFetching(false);
@@ -64,6 +63,25 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
         setTheme(prev => ({...prev, [field]: value }));
     };
 
+    const handleFieldChange = (id: string, key: keyof ReviewFormField, value: any) => {
+        setFormFields(prev => prev.map(field => field.id === id ? {...field, [key]: value} : field));
+    };
+
+    const addField = (type: 'rating' | 'comment') => {
+        const newField: ReviewFormField = {
+            id: `${type}-${Date.now()}`,
+            type,
+            label: type === 'rating' ? 'New Rating Question' : 'New Comment Question',
+            isOptional: false,
+        };
+        setFormFields(prev => [...prev, newField]);
+    };
+
+    const removeField = (id: string) => {
+        setFormFields(prev => prev.filter(field => field.id !== id));
+    };
+
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -72,8 +90,6 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
         if (logoFile) {
             // In a real app, you would upload the file to a storage service (e.g., Firebase Storage)
             // and get the public URL. Here, we'll just simulate it.
-            // For this demo, we'll just use the local blob URL which will work for the preview,
-            // but won't persist. A real implementation is needed for permanent storage.
             uploadedLogoUrl = URL.createObjectURL(logoFile);
         }
 
@@ -82,8 +98,7 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
                 welcomeMessage,
                 logoUrl: uploadedLogoUrl,
                 theme,
-                isRatingOptional,
-                isCommentRequired
+                reviewFormFields: formFields,
             });
             toast({
                 title: "Settings Saved",
@@ -150,11 +165,11 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
                             </div>
 
                             <Card>
-                                <CardHeader className="p-4">
-                                    <CardTitle className="text-base m-0 flex items-center gap-2">
+                                <CardHeader className="p-4 flex flex-row items-center justify-between">
+                                    <div className="flex items-center gap-2">
                                         <Palette className="w-5 h-5" />
-                                        Page Colors
-                                    </CardTitle>
+                                        <CardTitle className="text-base m-0">Page Colors</CardTitle>
+                                    </div>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0 grid grid-cols-2 gap-4">
                                     {Object.entries(theme).map(([key, value]) => (
@@ -180,48 +195,48 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
                             </Card>
 
                              <Card>
-                                <CardHeader className="p-4">
-                                    <CardTitle className="text-base m-0 flex items-center gap-2">
-                                        Form Options
-                                    </CardTitle>
+                                <CardHeader className="p-4 flex flex-row items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <CardTitle className="text-base m-0">Form Fields</CardTitle>
+                                    </div>
+                                     <div className="flex items-center gap-2">
+                                        <Button size="sm" variant="outline" type="button" onClick={() => addField('rating')}>
+                                            <PlusCircle className="mr-2 h-4 w-4" /> Rating
+                                        </Button>
+                                         <Button size="sm" variant="outline" type="button" onClick={() => addField('comment')}>
+                                            <PlusCircle className="mr-2 h-4 w-4" /> Comment
+                                        </Button>
+                                    </div>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0 space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <Label htmlFor="ratingOptional">Make Star Rating Optional</Label>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>If enabled, users can submit the form without selecting a rating.</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </div>
-                                        <Switch
-                                            id="ratingOptional"
-                                            checked={isRatingOptional}
-                                            onCheckedChange={setIsRatingOptional}
-                                        />
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                        <Label htmlFor="commentRequired">Make Comment Required</Label>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>If enabled, users must write a comment to submit the form.</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </div>
-                                        <Switch
-                                            id="commentRequired"
-                                            checked={isCommentRequired}
-                                            onCheckedChange={setIsCommentRequired}
-                                        />
-                                    </div>
+                                    {formFields.map((field) => (
+                                        <Card key={field.id} className="p-4">
+                                            <div className="flex items-start gap-4">
+                                                <div className="flex-1 space-y-2">
+                                                    <div className="flex items-center gap-2">
+                                                        {field.type === 'rating' ? <Star className="w-4 h-4 text-muted-foreground" /> : <MessageSquare className="w-4 h-4 text-muted-foreground" />}
+                                                        <Input
+                                                            value={field.label}
+                                                            onChange={(e) => handleFieldChange(field.id, 'label', e.target.value)}
+                                                            className="text-sm font-semibold border-none shadow-none p-0 h-auto focus-visible:ring-0"
+                                                        />
+                                                    </div>
+                                                     <div className="flex items-center justify-between pl-6">
+                                                        <Label htmlFor={`optional-${field.id}`} className="text-xs text-muted-foreground">Optional</Label>
+                                                        <Switch
+                                                            id={`optional-${field.id}`}
+                                                            checked={field.isOptional}
+                                                            onCheckedChange={(checked) => handleFieldChange(field.id, 'isOptional', checked)}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8" type="button" onClick={() => removeField(field.id)}>
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                    {formFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Add fields to build your form.</p>}
                                 </CardContent>
                             </Card>
                             
@@ -239,7 +254,7 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
 
                         {/* Live Preview */}
                         <div 
-                            className="space-y-4 rounded-lg border border-dashed p-6"
+                            className="space-y-4 rounded-lg border border-dashed p-6 h-fit sticky top-6"
                             style={{ 
                                 backgroundColor: theme.backgroundColor,
                                 color: theme.textColor
@@ -254,15 +269,21 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
                                 )}
                                 <CardTitle className="text-xl text-center" style={{ color: theme.textColor }}>{welcomeMessage}</CardTitle>
                                 
-                                <div className="text-center">
-                                    <Label className="text-base" style={{ opacity: 0.9 }}>How was your experience? {isRatingOptional && "(Optional)"}</Label>
-                                    <div className="flex justify-center mt-2">
-                                        <p style={{color: theme.primaryColor}}>★★★★★</p>
+                                <div className="space-y-6">
+                                {formFields.map(field => (
+                                    <div key={`preview-${field.id}`} className="text-left">
+                                        <Label className="text-base" style={{ opacity: 0.9 }}>
+                                            {field.label} {!field.isOptional ? "" : <span className="text-xs opacity-70">(Optional)</span>}
+                                        </Label>
+                                        {field.type === 'rating' ? (
+                                            <div className="flex justify-start mt-2">
+                                                <p style={{color: theme.primaryColor}}>★★★★★</p>
+                                            </div>
+                                        ) : (
+                                            <div className="mt-2 w-full h-20 rounded-md bg-white/20 p-2 border border-white/30"></div>
+                                        )}
                                     </div>
-                                </div>
-                                <div className="text-left">
-                                    <Label className="text-base" style={{ opacity: 0.9 }}>Tell us more {isCommentRequired ? "(Required)" : "(Optional)"}</Label>
-                                    <div className="mt-2 w-full h-20 rounded-md bg-white/20 p-2 border border-white/30"></div>
+                                ))}
                                 </div>
                                 
                                 <Button className="w-full" style={{backgroundColor: theme.buttonColor, color: theme.buttonTextColor}} disabled>
