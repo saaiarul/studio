@@ -61,7 +61,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 via-sky-300 to-blue-400 bg-[length:200%_200%] animate-gradient">
       <Card className="w-full max-w-md mx-4 shadow-2xl">
         <CardHeader className="text-center">
           <div className="flex justify-center items-center gap-2 mb-2">
