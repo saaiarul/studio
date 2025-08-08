@@ -18,8 +18,8 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
     }
 
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
-            <Card className="w-full max-w-lg mx-auto shadow-2xl">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-black via-blue-950 to-black bg-[length:200%_200%] animate-gradient">
+            <Card className="w-full max-w-lg mx-auto shadow-2xl bg-card/80 backdrop-blur-sm border-white/20 text-white">
                 <CardHeader className="text-center">
                     <div className="flex justify-center items-center gap-2 mb-2">
                         <QrCode className="h-8 w-8 text-primary" />

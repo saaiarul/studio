@@ -35,17 +35,17 @@ export function CouponForm({ customer }: CouponFormProps) {
   };
 
   return (
-    <Card className="text-left w-full">
-      <CardHeader>
-        <CardTitle>Get a Coupon!</CardTitle>
-        <CardDescription>
+    <Card className="text-left w-full bg-transparent border-0 shadow-none">
+      <CardHeader className="px-0">
+        <CardTitle className="text-white">Get a Coupon!</CardTitle>
+        <CardDescription className="text-white/70">
           Click below and we'll send a 10% off coupon to you via WhatsApp.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-          <Button onClick={handleSendCoupon} className="w-full">Send Coupon</Button>
+      <CardContent className="px-0">
+          <Button onClick={handleSendCoupon} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">Send Coupon</Button>
           {feedbackMessage.text && (
-            <p className={`text-sm text-center mt-4 ${feedbackMessage.type === 'error' ? 'text-destructive' : 'text-green-600'}`}>
+            <p className={`text-sm text-center mt-4 ${feedbackMessage.type === 'error' ? 'text-destructive' : 'text-green-400'}`}>
               {feedbackMessage.text}
             </p>
           )}

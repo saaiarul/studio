@@ -47,8 +47,8 @@ export function ReviewFlow({ business }: ReviewFlowProps) {
                 return (
                     <div className="text-center p-8 space-y-6 animate-in fade-in-50 duration-500">
                         <div>
-                            <CardTitle className="text-xl mb-2">Thank you!</CardTitle>
-                            <p className="text-muted-foreground">Your feedback has been submitted.</p>
+                            <CardTitle className="text-xl mb-2 text-white">Thank you!</CardTitle>
+                            <p className="text-white/70">Your feedback has been submitted.</p>
                         </div>
                         {customer?.phone && <CouponForm customer={customer} />}
                     </div>
