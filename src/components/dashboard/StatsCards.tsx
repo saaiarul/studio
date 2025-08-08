@@ -40,9 +40,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats.credits}</div>
-          <Button size="sm" variant="secondary" className="text-xs mt-1 h-auto py-0.5 px-2">
-            Buy More
-          </Button>
+          <p className="text-xs text-muted-foreground">Contact admin to recharge</p>
         </CardContent>
       </Card>
     </div>
