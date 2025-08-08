@@ -58,30 +58,43 @@ export function ReviewForm({ businessId, googleReviewLink, onReviewSubmitted, cu
     }
   };
 
+  const textColor = { color: 'var(--page-text)' };
+  const mutedTextColor = { color: 'var(--page-text)', opacity: 0.9 };
+  const inputStyle = {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    color: 'var(--page-text)'
+  };
+   const buttonStyle = {
+    backgroundColor: 'var(--button-bg)',
+    color: 'var(--button-text)'
+  };
+
 
   return (
     <div className="animate-in fade-in-50 duration-500">
-        <h3 className="text-xl font-semibold text-center mb-4 text-white">Thanks, {customerName}!</h3>
+        <h3 className="text-xl font-semibold text-center mb-4" style={textColor}>Thanks, {customerName}!</h3>
         <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2 text-center">
-            <Label className="text-base text-white/90">How was your experience?</Label>
+            <Label className="text-base" style={mutedTextColor}>How was your experience?</Label>
             <div className="flex justify-center">
             <StarRating rating={rating} onRatingChange={setRating} />
             </div>
         </div>
         {rating > 0 && (
             <div className="space-y-2 animate-in fade-in-50 duration-500">
-            <Label htmlFor="comment" className="text-white/90">Tell us more (optional)</Label>
+            <Label htmlFor="comment" style={mutedTextColor}>Tell us more (optional)</Label>
             <Textarea
                 id="comment"
                 placeholder="What could we do better?"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                className="bg-white/10 border-white/20 focus:bg-white/20 text-white placeholder:text-white/60"
+                className="placeholder:text-white/60"
+                style={inputStyle}
             />
             </div>
         )}
-        <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" disabled={isLoading || rating === 0}>
+        <Button type="submit" className="w-full" style={buttonStyle} disabled={isLoading || rating === 0}>
             {isLoading ? 'Submitting...' : 'Submit Review'}
         </Button>
         </form>

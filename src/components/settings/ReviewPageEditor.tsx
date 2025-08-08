@@ -1,23 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { StarRating } from "@/components/StarRating";
-import { Textarea } from "@/components/ui/textarea";
-import { Eye, Save, Palette, Trash2, GripVertical, PlusCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { Switch } from "../ui/switch";
 import { Input } from "../ui/input";
-
-// Mock component representing an element on the review page
-type ReviewComponent = {
-    id: string;
-    type: 'rating' | 'comment';
-    label: string;
-    required: boolean; // for comments
-};
+import { Textarea } from "@/components/ui/textarea";
+import { Eye, Save, Palette, UploadCloud } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { getBusinessById, updateBusiness, ReviewPageTheme } from "@/lib/data";
 
 type ReviewPageEditorProps = {
     businessId: string;
@@ -26,111 +18,156 @@ type ReviewPageEditorProps = {
 export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
+    const [isFetching, setIsFetching] = useState(true);
 
-    // Mock state for settings and components
-    const [pageTitle, setPageTitle] = useState("Leave a review for Your Business");
-    const [components, setComponents] = useState<ReviewComponent[]>([
-        { id: 'rating-1', type: 'rating', label: "How was your experience?", required: true },
-        { id: 'comment-1', type: 'comment', label: "Tell us more", required: false },
-    ]);
+    const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
+    const [logoFile, setLogoFile] = useState<File | null>(null);
+    const [welcomeMessage, setWelcomeMessage] = useState("");
+    const [theme, setTheme] = useState<ReviewPageTheme>({
+        primaryColor: '#4A90E2',
+        backgroundColor: '#F5F8FA',
+        textColor: '#333333',
+        buttonColor: '#50E3C2',
+        buttonTextColor: '#FFFFFF',
+    });
 
-    const addComponent = (type: 'rating' | 'comment') => {
-        const newId = `${type}-${Date.now()}`;
-        const newComponent: ReviewComponent = {
-            id: newId,
-            type,
-            label: type === 'rating' ? 'New Rating Question' : 'New Comment',
-            required: type === 'comment' ? false : true,
+    useEffect(() => {
+        const fetchBusinessData = async () => {
+            setIsFetching(true);
+            const business = await getBusinessById(businessId);
+            if (business) {
+                setWelcomeMessage(business.welcomeMessage || `Leave a review for ${business.name}`);
+                setLogoUrl(business.logoUrl);
+                if(business.theme) setTheme(business.theme);
+            }
+            setIsFetching(false);
         };
-        setComponents(prev => [...prev, newComponent]);
+        fetchBusinessData();
+    }, [businessId]);
+
+    const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setLogoFile(file);
+            setLogoUrl(URL.createObjectURL(file));
+        }
     };
     
-    const removeComponent = (id: string) => {
-        setComponents(prev => prev.filter(c => c.id !== id));
+    const handleThemeChange = (field: keyof ReviewPageTheme, value: string) => {
+        setTheme(prev => ({...prev, [field]: value }));
     };
 
-    const handleComponentChange = (id: string, newValues: Partial<ReviewComponent>) => {
-        setComponents(prev => prev.map(c => c.id === id ? { ...c, ...newValues } : c));
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        // Mock API call
-        setTimeout(() => {
-            console.log('Saving settings:', { pageTitle, components });
+
+        let uploadedLogoUrl = logoUrl;
+        if (logoFile) {
+            // In a real app, you would upload the file to a storage service (e.g., Firebase Storage)
+            // and get the public URL. Here, we'll just simulate it.
+            // For this demo, we'll just use the local blob URL which will work for the preview,
+            // but won't persist. A real implementation is needed for permanent storage.
+            uploadedLogoUrl = URL.createObjectURL(logoFile);
+        }
+
+        try {
+            await updateBusiness(businessId, {
+                welcomeMessage,
+                logoUrl: uploadedLogoUrl,
+                theme
+            });
             toast({
                 title: "Settings Saved",
                 description: "Your review page has been updated.",
             });
+        } catch (error) {
+             toast({
+                variant: "destructive",
+                title: "Error Saving",
+                description: "Could not save your settings.",
+            });
+        } finally {
             setIsLoading(false);
-        }, 1500);
+        }
     };
 
     const handlePreview = () => {
         window.open(`/review/${businessId}`, '_blank');
     }
 
+    if (isFetching) {
+        return <p>Loading settings...</p>
+    }
+
     return (
         <Card className="shadow-lg">
             <CardHeader>
-                <CardTitle>Review Page Editor</CardTitle>
-                <CardDescription>Customize what customers see. Drag components in the preview to reorder (feature coming soon).</CardDescription>
+                <CardTitle>Review Page Customization</CardTitle>
+                <CardDescription>Personalize the review page with your own branding and colors.</CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit}>
                     <div className="grid md:grid-cols-2 gap-12">
                         {/* Settings Panel */}
                         <div className="space-y-6">
-                             <div className="space-y-2">
-                                <Label htmlFor="pageTitle">Page Title</Label>
-                                <Input 
-                                    id="pageTitle" 
-                                    value={pageTitle}
-                                    onChange={(e) => setPageTitle(e.target.value)}
+                            <div className="space-y-2">
+                                <Label>Logo</Label>
+                                <div className="flex items-center gap-4">
+                                     <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                                        {logoUrl ? (
+                                            <Image src={logoUrl} alt="logo" width={80} height={80} className="object-cover" data-ai-hint="logo"/>
+                                        ) : (
+                                            <UploadCloud className="w-8 h-8 text-muted-foreground" />
+                                        )}
+                                    </div>
+                                    <Button asChild variant="outline">
+                                        <label htmlFor="logo-upload" className="cursor-pointer">
+                                            {logoUrl ? 'Change Logo' : 'Upload Logo'}
+                                            <Input id="logo-upload" type="file" className="sr-only" onChange={handleLogoChange} accept="image/*" />
+                                        </label>
+                                    </Button>
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <Label htmlFor="welcomeMessage">Welcome Message</Label>
+                                <Textarea 
+                                    id="welcomeMessage" 
+                                    value={welcomeMessage}
+                                    onChange={(e) => setWelcomeMessage(e.target.value)}
+                                    placeholder="Welcome! Please leave us a review."
                                 />
                             </div>
 
-                            {/* Component Settings */}
-                             <div className="space-y-4">
-                                {components.map((component, index) => (
-                                    <Card key={component.id}>
-                                        <CardHeader className="p-4 flex flex-row items-center justify-between">
-                                            <CardTitle className="text-base m-0">
-                                                {component.type === 'rating' ? `Star Rating #${index + 1}` : `Comment Box #${index + 1}`}
-                                            </CardTitle>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => removeComponent(component.id)}>
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </CardHeader>
-                                        <CardContent className="p-4 pt-0 space-y-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor={`${component.id}-label`}>{component.type === 'rating' ? 'Question' : 'Label'}</Label>
-                                                <Input id={`${component.id}-label`} value={component.label} onChange={e => handleComponentChange(component.id, { label: e.target.value })}/>
+                            <Card>
+                                <CardHeader className="p-4">
+                                    <CardTitle className="text-base m-0 flex items-center gap-2">
+                                        <Palette className="w-5 h-5" />
+                                        Page Colors
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-4 pt-0 grid grid-cols-2 gap-4">
+                                    {Object.entries(theme).map(([key, value]) => (
+                                         <div key={key} className="space-y-2">
+                                            <Label htmlFor={`theme-${key}`} className="capitalize text-sm">{key.replace(/([A-Z])/g, ' $1').trim()}</Label>
+                                            <div className="flex items-center gap-2">
+                                                <Input 
+                                                    id={`theme-${key}`}
+                                                    type="color" 
+                                                    value={value} 
+                                                    onChange={e => handleThemeChange(key as keyof ReviewPageTheme, e.target.value)}
+                                                    className="w-12 h-10 p-1"
+                                                />
+                                                <Input 
+                                                     value={value} 
+                                                     onChange={e => handleThemeChange(key as keyof ReviewPageTheme, e.target.value)}
+                                                     className="h-10"
+                                                />
                                             </div>
-                                            {component.type === 'comment' && (
-                                                <div className="flex items-center space-x-2">
-                                                    <Switch
-                                                        id={`${component.id}-required`}
-                                                        checked={component.required}
-                                                        onCheckedChange={(checked) => handleComponentChange(component.id, { required: checked })}
-                                                    />
-                                                    <Label htmlFor={`${component.id}-required`}>Required</Label>
-                                                </div>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </div>
-
-                            <div className="flex gap-2">
-                                <Button type="button" variant="outline" onClick={() => addComponent('rating')}>
-                                    <PlusCircle className="mr-2 h-4 w-4" /> Add Rating
-                                </Button>
-                                 <Button type="button" variant="outline" onClick={() => addComponent('comment')}>
-                                    <PlusCircle className="mr-2 h-4 w-4" /> Add Comment
-                                </Button>
-                            </div>
+                                        </div>
+                                    ))}
+                                </CardContent>
+                            </Card>
                             
                             <div className="flex gap-2 pt-4">
                                 <Button type="submit" disabled={isLoading} className="bg-accent hover:bg-accent/90">
@@ -145,41 +182,30 @@ export function ReviewPageEditor({ businessId }: ReviewPageEditorProps) {
                         </div>
 
                         {/* Live Preview */}
-                        <div className="space-y-4 rounded-lg border border-dashed p-6 bg-background/50">
-                            <h3 className="text-lg font-semibold text-center text-muted-foreground mb-6">Live Preview</h3>
+                        <div 
+                            className="space-y-4 rounded-lg border border-dashed p-6"
+                            style={{ 
+                                backgroundColor: theme.backgroundColor,
+                                color: theme.textColor
+                            }}
+                        >
+                            <h3 className="text-lg font-semibold text-center opacity-70 mb-6">Live Preview</h3>
                             <div className="w-full max-w-sm mx-auto space-y-8">
-                                <CardTitle className="text-xl text-center">{pageTitle}</CardTitle>
-                                {components.map(comp => (
-                                    <div key={comp.id} className="relative group animate-in fade-in-50 duration-500">
-                                        <div className="absolute -left-8 top-1/2 -translate-y-1/2 opacity-20 group-hover:opacity-100 cursor-grab">
-                                            <GripVertical className="h-5 w-5" />
-                                        </div>
-                                        {comp.type === 'rating' && (
-                                            <div className="space-y-2 text-center">
-                                                <Label className="text-base">{comp.label}</Label>
-                                                <div className="flex justify-center">
-                                                    <StarRating rating={3} readOnly />
-                                                </div>
-                                            </div>
-                                        )}
-                                        {comp.type === 'comment' && (
-                                            <div className="space-y-2">
-                                                <Label htmlFor={`preview-${comp.id}`}>
-                                                    {comp.label}
-                                                    {!comp.required && <span className="text-muted-foreground"> (optional)</span>}
-                                                </Label>
-                                                <Textarea
-                                                    id={`preview-${comp.id}`}
-                                                    placeholder="What could we do better?"
-                                                    readOnly
-                                                    required={comp.required}
-                                                />
-                                            </div>
-                                        )}
+                                {logoUrl && (
+                                     <div className="flex justify-center">
+                                        <Image src={logoUrl} alt="preview logo" width={80} height={80} className="rounded-full object-contain" data-ai-hint="logo"/>
                                     </div>
-                                ))}
+                                )}
+                                <CardTitle className="text-xl text-center" style={{ color: theme.textColor }}>{welcomeMessage}</CardTitle>
                                 
-                                <Button className="w-full bg-accent hover:bg-accent/90" disabled>
+                                <div className="text-center">
+                                    <Label className="text-base" style={{ opacity: 0.9 }}>How was your experience?</Label>
+                                    <div className="flex justify-center mt-2">
+                                        <p style={{color: theme.primaryColor}}>★★★★★</p>
+                                    </div>
+                                </div>
+                                
+                                <Button className="w-full" style={{backgroundColor: theme.buttonColor, color: theme.buttonTextColor}} disabled>
                                     Submit Review
                                 </Button>
                             </div>

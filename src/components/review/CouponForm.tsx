@@ -34,16 +34,23 @@ export function CouponForm({ customer }: CouponFormProps) {
     window.open(whatsappUrl, '_blank');
   };
 
+  const textColor = { color: 'var(--page-text)' };
+  const mutedTextColor = { color: 'var(--page-text)', opacity: 0.7 };
+  const buttonStyle = {
+    backgroundColor: 'var(--primary-color)',
+    color: 'var(--button-text)'
+  };
+
   return (
     <Card className="text-left w-full bg-transparent border-0 shadow-none">
       <CardHeader className="px-0">
-        <CardTitle className="text-white">Get a Coupon!</CardTitle>
-        <CardDescription className="text-white/70">
+        <CardTitle style={textColor}>Get a Coupon!</CardTitle>
+        <CardDescription style={mutedTextColor}>
           Click below and we'll send a 10% off coupon to you via WhatsApp.
         </CardDescription>
       </CardHeader>
       <CardContent className="px-0">
-          <Button onClick={handleSendCoupon} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">Send Coupon</Button>
+          <Button onClick={handleSendCoupon} className="w-full" style={buttonStyle}>Send Coupon</Button>
           {feedbackMessage.text && (
             <p className={`text-sm text-center mt-4 ${feedbackMessage.type === 'error' ? 'text-destructive' : 'text-green-400'}`}>
               {feedbackMessage.text}

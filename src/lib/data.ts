@@ -5,17 +5,28 @@ import { format, subDays } from 'date-fns';
 
 export type BusinessStatus = 'approved' | 'pending' | 'rejected';
 
+export type ReviewPageTheme = {
+    primaryColor: string;
+    backgroundColor: string;
+    textColor: string;
+    buttonColor: string;
+    buttonTextColor: string;
+};
+
 export type Business = {
     id: string;
     name: string;
     ownerEmail: string;
-    password?: string; // Optional for existing data, but should be set for new ones
+    password?: string;
     reviews: number;
     avgRating: number;
     reviewUrl: string;
     googleReviewLink: string;
     status: BusinessStatus;
     credits: number;
+    logoUrl?: string;
+    welcomeMessage?: string;
+    theme?: ReviewPageTheme;
 };
 
 type Feedback = {
@@ -48,7 +59,16 @@ let businesses: Business[] = [
         reviewUrl: 'http://localhost:3000/review/comp-123',
         googleReviewLink: 'https://g.page/r/some-google-link/review',
         status: 'approved',
-        credits: 100
+        credits: 100,
+        logoUrl: '/logo-placeholder.png',
+        welcomeMessage: 'Thanks for visiting The Happy Cafe! We hope you enjoyed your time with us.',
+        theme: {
+            primaryColor: '#4A90E2', // A friendly blue
+            backgroundColor: '#F5F8FA',
+            textColor: '#333333',
+            buttonColor: '#50E3C2', // A vibrant teal
+            buttonTextColor: '#FFFFFF',
+        }
     },
     { 
         id: 'comp-456', 
@@ -160,14 +180,15 @@ export async function getBusinessById(id: string) {
 
 export async function createBusiness(data: { businessName: string, ownerEmail: string }): Promise<Business> {
     await new Promise(resolve => setTimeout(resolve, 500));
+    const newId = `comp-${Date.now()}`;
     const newBusiness: Business = {
-        id: `comp-${Date.now()}`,
+        id: newId,
         name: data.businessName,
         ownerEmail: data.ownerEmail,
         password: `password-${Math.random().toString(36).substring(2, 10)}`, // Generate random password
         reviews: 0,
         avgRating: 0,
-        reviewUrl: `http://localhost:3000/review/comp-${Date.now()}`,
+        reviewUrl: `http://localhost:3000/review/${newId}`,
         googleReviewLink: '',
         status: 'pending',
         credits: 0,
@@ -233,14 +254,20 @@ export async function addFeedback(businessId: string, data: { rating: number, co
 
     const customer = customers.find(c => c.name === data.customerName && c.businessId === businessId);
     if (!customer) {
-        throw new Error("Customer not found");
+        // For simplicity, we create a customer if they don't exist.
+        // In a real app, this might be handled differently.
+        const newCustomer = await addCustomer(businessId, { name: data.customerName });
+        customers.push(newCustomer);
     }
+
+    const customerId = customers.find(c => c.name === data.customerName && c.businessId === businessId)!.id;
+
 
     // Add new feedback
     const newFeedback: Feedback = {
         id: `fb-${Date.now()}-${Math.random()}`,
         businessId,
-        customerId: customer.id,
+        customerId: customerId,
         rating: data.rating,
         comment: data.comment,
         date: format(new Date(), 'yyyy-MM-dd')

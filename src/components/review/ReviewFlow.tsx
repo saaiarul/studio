@@ -5,12 +5,7 @@ import { CustomerDetailsForm } from "./CustomerDetailsForm";
 import { ReviewForm } from "./ReviewForm";
 import { CouponForm } from "./CouponForm";
 import { CardTitle } from "../ui/card";
-
-type Business = {
-    id: string;
-    name: string;
-    googleReviewLink: string;
-};
+import type { Business } from "@/lib/data";
 
 type Customer = {
     name: string;
@@ -40,15 +35,15 @@ export function ReviewFlow({ business }: ReviewFlowProps) {
     const renderStep = () => {
         switch (step) {
             case "details":
-                return <CustomerDetailsForm businessId={business.id} onDetailsSubmitted={handleDetailsSubmitted} />;
+                return <CustomerDetailsForm business={business} onDetailsSubmitted={handleDetailsSubmitted} />;
             case "review":
                 return customer && <ReviewForm businessId={business.id} googleReviewLink={business.googleReviewLink} onReviewSubmitted={handleReviewSubmitted} customerName={customer.name} />;
             case "coupon":
                 return (
                     <div className="text-center p-8 space-y-6 animate-in fade-in-50 duration-500">
                         <div>
-                            <CardTitle className="text-xl mb-2 text-white">Thank you!</CardTitle>
-                            <p className="text-white/70">Your feedback has been submitted.</p>
+                            <CardTitle className="text-xl mb-2" style={{color: 'var(--page-text)'}}>Thank you!</CardTitle>
+                            <p style={{color: 'var(--page-text)', opacity: 0.7}}>Your feedback has been submitted.</p>
                         </div>
                         {customer?.phone && <CouponForm customer={customer} />}
                     </div>
