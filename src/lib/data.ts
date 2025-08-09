@@ -1,9 +1,6 @@
 
 
-// In a real app, this data would be fetched from a database.
-// We're using a static list here for demonstration purposes.
-
-import { format, subDays } from 'date-fns';
+import { format } from 'date-fns';
 import { supabase } from './supabaseClient';
 
 export type BusinessStatus = 'approved' | 'pending' | 'rejected';
@@ -50,12 +47,12 @@ export type Feedback = {
     businessId: string;
     customerId: string;
     values: FeedbackValue[];
-    comment: string; // Keep a primary comment for display
-    rating: number; // Keep a primary rating for display
+    comment: string; 
+    rating: number; 
     date: string;
 };
 
-type Customer = {
+export type Customer = {
     id: string;
     businessId: string;
     name: string;
@@ -65,278 +62,294 @@ type Customer = {
 };
 
 
-let businesses: Business[] = [
-    { 
-        id: 'comp-123', 
-        name: 'The Happy Cafe', 
-        ownerEmail: 'company@reviewroute.com', 
-        password: 'password',
-        reviews: 0, 
-        avgRating: 0, 
-        reviewUrl: 'http://localhost:3000/review/comp-123',
-        googleReviewLink: 'https://g.page/r/some-google-link/review',
-        status: 'approved',
-        credits: 100,
-        logoUrl: 'https://placehold.co/100x100/A67B5B/FFFFFF/png',
-        welcomeMessage: 'Thanks for visiting The Happy Cafe! We hope you enjoyed your time with us.',
-        theme: {
-            primaryColor: '#4A90E2', // A friendly blue
-            backgroundColor: '#F5F8FA',
-            textColor: '#333333',
-            buttonColor: '#50E3C2', // A vibrant teal
-            buttonTextColor: '#FFFFFF',
-        },
-        reviewFormFields: [
-            { id: 'rating-1', type: 'rating', label: 'How was your overall experience?', isOptional: false },
-            { id: 'comment-1', type: 'comment', label: 'Tell us more (Optional)', isOptional: true },
-        ],
-    },
-    { 
-        id: 'comp-456', 
-        name: 'City Bookstore', 
-        ownerEmail: 'book@example.com', 
-        password: 'password',
-        reviews: 0, 
-        avgRating: 0, 
-        reviewUrl: 'http://localhost:3000/review/comp-456',
-        googleReviewLink: 'https://www.google.com',
-        status: 'approved',
-        credits: 50,
-        reviewFormFields: [
-            { id: 'rating-1', type: 'rating', label: 'How was your visit?', isOptional: false },
-            { id: 'comment-1', type: 'comment', label: 'Any comments?', isOptional: false },
-        ]
-    },
-    { 
-        id: 'comp-789', 
-        name: 'Tech Gadgets Inc.', 
-        ownerEmail: 'gadget@example.com', 
-        password: 'password',
-        reviews: 0, 
-        avgRating: 0, 
-        reviewUrl: 'http://localhost:3000/review/comp-789',
-        googleReviewLink: 'https://www.google.com',
-        status: 'pending',
-        credits: 0,
-        reviewFormFields: [
-            { id: 'rating-1', type: 'rating', label: 'Rate your purchase', isOptional: false },
-            { id: 'comment-1', type: 'comment', label: 'Feedback', isOptional: true },
-        ]
-    },
-];
-
-let feedbacks: Feedback[] = [];
-let customers: Customer[] = [];
-
-// Function to generate and reset mock data
-const generateMockData = () => {
-    // Reset data, but keep statuses and credits for demo purposes
-    const businessBase = businesses.map(b => ({ ...b, reviews: 0, avgRating: 0 }));
-    businesses = businessBase;
-    feedbacks = [];
-    customers = [];
-
-    const mockComments = [
-        "The service was incredibly slow, and the food was cold. Very disappointed.",
-        "Not what I was expecting. The atmosphere was lacking, and the staff seemed uninterested.",
-        "It was okay, but nothing special. Probably wouldn't come back.",
-        "A decent experience, but there's room for improvement in the menu.",
-        "Loved the ambiance and the food was delicious! Will definitely be back.",
-        "Fantastic service and amazing quality. Five stars all the way!",
-        "The staff was so friendly and helpful. Made our day!",
-        "Absolutely a top-notch experience from start to finish."
-    ];
-    
-    const mockNames = ["Alex Johnson", "Maria Garcia", "Chen Wei", "Fatima Al-Fassi", "David Smith"];
-
-    businesses.forEach(business => {
-        let totalRating = 0;
-        let reviewCount = 0;
-        for (let i = 0; i < 50; i++) { // Increased to 50 for more data
-            const rating = Math.floor(Math.random() * 5) + 1; // 1 to 5
-            const date = format(subDays(new Date(), Math.floor(Math.random() * 30)), 'yyyy-MM-dd');
-            const customerId = `cust-${business.id}-${i}`;
-            
-            const newCustomer: Customer = {
-                id: customerId,
-                businessId: business.id,
-                name: mockNames[Math.floor(Math.random() * mockNames.length)],
-                phone: `555-01${String(i).padStart(2, '0')}`,
-                email: `customer${i}@example.com`,
-                firstReviewDate: date
-            }
-            customers.push(newCustomer);
-
-            const newFeedback: Feedback = {
-                id: `fb-${business.id}-${i}`,
-                businessId: business.id,
-                customerId: customerId,
-                rating,
-                comment: mockComments[Math.floor(Math.random() * mockComments.length)],
-                values: [{ fieldId: business.reviewFormFields?.[0].id || 'rating-1', value: rating }],
-                date: date
-            };
-
-            feedbacks.push(newFeedback);
-
-            totalRating += rating;
-            reviewCount++;
-        }
-
-        if (reviewCount > 0) {
-            business.reviews = feedbacks.filter(f => f.businessId === business.id && f.rating < 4).length;
-            business.avgRating = totalRating / reviewCount;
-        }
-    });
-};
-
-// Initial generation
-generateMockData();
-
-
 export async function getBusinesses(): Promise<Business[]> {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return businesses;
+    const { data, error } = await supabase.from('businesses').select('*');
+    if (error) {
+        console.error("Error fetching businesses:", error);
+        throw error;
+    }
+
+    // The data from supabase needs to be mapped to our Business type.
+    // Supabase returns snake_case, so we need to convert to camelCase.
+    return data.map(b => ({
+        id: b.id,
+        name: b.name,
+        ownerEmail: b.owner_email,
+        reviews: b.reviews,
+        avgRating: b.avg_rating,
+        reviewUrl: b.review_url,
+        googleReviewLink: b.google_review_link,
+        status: b.status,
+        credits: b.credits,
+        logoUrl: b.logo_url,
+        welcomeMessage: b.welcome_message,
+        theme: b.theme,
+        reviewFormFields: b.review_form_fields,
+    }));
 }
 
-export async function getBusinessById(id: string) {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 100));
-    const business = businesses.find(b => b.id === id) || null;
-    // Add default form fields if they don't exist
-    if (business && !business.reviewFormFields) {
-        business.reviewFormFields = [
-            { id: 'rating-1', type: 'rating', label: 'How was your experience?', isOptional: false },
-            { id: 'comment-1', type: 'comment', label: 'Any comments?', isOptional: true },
-        ];
+export async function getBusinessById(id: string): Promise<Business | null> {
+    const { data, error } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (error) {
+        console.error(`Error fetching business by id ${id}:`, error);
+        if (error.code === 'PGRST116') return null; // PostgREST error for no rows found
+        throw error;
     }
-    return business;
+    if (!data) return null;
+
+    return {
+        id: data.id,
+        name: data.name,
+        ownerEmail: data.owner_email,
+        reviews: data.reviews,
+        avgRating: data.avg_rating,
+        reviewUrl: data.review_url,
+        googleReviewLink: data.google_review_link,
+        status: data.status,
+        credits: data.credits,
+        logoUrl: data.logo_url,
+        welcomeMessage: data.welcome_message,
+        theme: data.theme,
+        reviewFormFields: data.review_form_fields,
+    };
 }
 
 export async function createBusiness(data: { businessName: string, ownerEmail: string }): Promise<Business> {
-    await new Promise(resolve => setTimeout(resolve, 500));
     const newId = `comp-${Date.now()}`;
-    const newBusiness: Business = {
-        id: newId,
-        name: data.businessName,
-        ownerEmail: data.ownerEmail,
-        password: `password-${Math.random().toString(36).substring(2, 10)}`, // Generate random password
-        reviews: 0,
-        avgRating: 0,
-        reviewUrl: `http://localhost:3000/review/${newId}`,
-        googleReviewLink: '',
-        status: 'pending',
-        credits: 0,
-        reviewFormFields: [
-            { id: 'rating-1', type: 'rating', label: 'How was your experience?', isOptional: false },
-            { id: 'comment-1', type: 'comment', label: 'Any comments?', isOptional: true },
-        ],
+    const { data: newBusinessData, error } = await supabase
+        .from('businesses')
+        .insert({
+            id: newId,
+            name: data.businessName,
+            owner_email: data.ownerEmail,
+            password: `password-${Math.random().toString(36).substring(2, 10)}`,
+            review_url: `http://localhost:3000/review/${newId}`, // You might want to get this from env
+        })
+        .select()
+        .single();
+    
+    if (error) {
+        console.error("Error creating business:", error);
+        throw error;
+    }
+
+    return {
+        id: newBusinessData.id,
+        name: newBusinessData.name,
+        ownerEmail: newBusinessData.owner_email,
+        reviews: newBusinessData.reviews,
+        avgRating: newBusinessData.avg_rating,
+        reviewUrl: newBusinessData.review_url,
+        googleReviewLink: newBusinessData.google_review_link,
+        status: newBusinessData.status,
+        credits: newBusinessData.credits,
     };
-    businesses.push(newBusiness);
-    return newBusiness;
 }
 
 
-export async function updateBusiness(id: string, data: Partial<Omit<Business, 'id'>>) {
-    // Simulate network delay and update
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const index = businesses.findIndex(b => b.id === id);
-    if (index !== -1) {
-        businesses[index] = { ...businesses[index], ...data };
-        return businesses[index];
+export async function updateBusiness(id: string, data: Partial<Omit<Business, 'id'>>): Promise<Business | null> {
+    // Convert camelCase to snake_case for Supabase
+    const updateData: {[key: string]: any} = {};
+    if (data.name) updateData.name = data.name;
+    if (data.ownerEmail) updateData.owner_email = data.ownerEmail;
+    if (data.password) updateData.password = data.password;
+    if (data.status) updateData.status = data.status;
+    if (data.credits !== undefined) updateData.credits = data.credits;
+    if (data.logoUrl) updateData.logo_url = data.logoUrl;
+    if (data.welcomeMessage) updateData.welcome_message = data.welcomeMessage;
+    if (data.theme) updateData.theme = data.theme;
+    if (data.reviewFormFields) updateData.review_form_fields = data.reviewFormFields;
+
+
+    const { data: updatedBusinessData, error } = await supabase
+        .from('businesses')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+    
+    if (error) {
+        console.error("Error updating business:", error);
+        throw error;
     }
-    return null;
+
+    return {
+        id: updatedBusinessData.id,
+        name: updatedBusinessData.name,
+        ownerEmail: updatedBusinessData.owner_email,
+        reviews: updatedBusinessData.reviews,
+        avgRating: updatedBusinessData.avg_rating,
+        reviewUrl: updatedBusinessData.review_url,
+        googleReviewLink: updatedBusinessData.google_review_link,
+        status: updatedBusinessData.status,
+        credits: updatedBusinessData.credits,
+        logoUrl: updatedBusinessData.logo_url,
+        welcomeMessage: updatedBusinessData.welcome_message,
+        theme: updatedBusinessData.theme,
+        reviewFormFields: updatedBusinessData.review_form_fields,
+    };
 }
 
 export async function getFeedbackByBusinessId(businessId: string): Promise<Pick<Feedback, 'id'|'rating'|'comment'|'date'>[]> {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    const businessFeedback = feedbacks.filter(f => f.businessId === businessId && f.rating < 4);
-    
-    const feedbackWithCustomer = businessFeedback.map(f => {
-        const customer = customers.find(c => c.id === f.customerId);
-        return {
-            id: f.id,
-            rating: f.rating,
-            // For the table, we'll still show the primary comment.
-            comment: `${customer?.name || 'Anonymous'}: ${f.comment}`,
-            date: f.date
-        }
-    })
+    const { data: feedbacks, error } = await supabase
+        .from('feedbacks')
+        .select(`
+            id,
+            rating,
+            comment,
+            date,
+            customers ( name )
+        `)
+        .eq('business_id', businessId)
+        .lt('rating', 4);
 
-    return feedbackWithCustomer.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    if (error) {
+        console.error("Error fetching feedback:", error);
+        throw error;
+    }
+
+    return feedbacks.map((f: any) => ({
+        id: f.id,
+        rating: f.rating,
+        comment: `${f.customers?.name || 'Anonymous'}: ${f.comment}`,
+        date: f.date
+    })).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 export async function getFeedbackByBusinessIdWithFullData(businessId: string): Promise<Feedback[]> {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return feedbacks.filter(f => f.businessId === businessId);
+    const { data, error } = await supabase
+        .from('feedbacks')
+        .select('*')
+        .eq('business_id', businessId);
+    
+    if (error) {
+        console.error("Error fetching full feedback data:", error);
+        throw error;
+    }
+    return data;
 }
 
 
 export async function getCustomersByBusinessId(businessId: string): Promise<Customer[]> {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return customers.filter(c => c.businessId === businessId).sort((a, b) => new Date(b.firstReviewDate).getTime() - new Date(a.firstReviewDate).getTime());
+     const { data, error } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('business_id', businessId)
+        .order('first_review_date', { ascending: false });
+
+    if (error) {
+        console.error("Error fetching customers:", error);
+        throw error;
+    }
+    
+    return data.map(c => ({
+        id: c.id,
+        businessId: c.business_id,
+        name: c.name,
+        phone: c.phone,
+        email: c.email,
+        firstReviewDate: c.first_review_date
+    }));
 }
 
 export async function addCustomer(businessId: string, data: { name: string, phone?: string, email?: string }): Promise<Customer> {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    // In a real app, you'd check if a customer with this phone/email already exists.
-    const newCustomer: Customer = {
-        id: `cust-${Date.now()}`,
-        businessId,
-        name: data.name,
-        phone: data.phone,
-        email: data.email,
-        firstReviewDate: format(new Date(), 'yyyy-MM-dd')
+    const { data: newCustomerData, error } = await supabase
+        .from('customers')
+        .insert({
+            business_id: businessId,
+            name: data.name,
+            phone: data.phone,
+            email: data.email,
+            first_review_date: format(new Date(), 'yyyy-MM-dd')
+        })
+        .select()
+        .single();
+    
+    if (error) {
+        console.error("Error adding customer:", error);
+        throw error;
+    }
+
+    return {
+        id: newCustomerData.id,
+        businessId: newCustomerData.business_id,
+        name: newCustomerData.name,
+        phone: newCustomerData.phone,
+        email: newCustomerData.email,
+        firstReviewDate: newCustomerData.first_review_date
     };
-    customers.push(newCustomer);
-    return newCustomer;
 }
 
 export async function addFeedback(businessId: string, data: { feedbackValues: FeedbackValue[], customerName: string }): Promise<Feedback> {
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    const business = businesses.find(b => b.id === businessId);
+    const business = await getBusinessById(businessId);
     if (!business) {
         throw new Error("Business not found");
     }
 
-    const customer = customers.find(c => c.name === data.customerName && c.businessId === businessId);
+    // Find or create customer
+    let { data: customer } = await supabase.from('customers').select('id').eq('name', data.customerName).eq('business_id', businessId).single();
     if (!customer) {
-        // For simplicity, we create a customer if they don't exist.
-        // In a real app, this might be handled differently.
-        const newCustomer = await addCustomer(businessId, { name: data.customerName });
-        customers.push(newCustomer);
+        customer = await addCustomer(businessId, { name: data.customerName });
     }
-
-    const customerId = customers.find(c => c.name === data.customerName && c.businessId === businessId)!.id;
-
-    // For dashboard display, we'll designate the first rating and comment as primary
+    const customerId = customer!.id;
+    
     const primaryRatingField = business.reviewFormFields?.find(f => f.type === 'rating');
     const primaryCommentField = business.reviewFormFields?.find(f => f.type === 'comment');
-    
     const primaryRatingValue = data.feedbackValues.find(v => v.fieldId === primaryRatingField?.id)?.value as number || 0;
     const primaryCommentValue = data.feedbackValues.find(v => v.fieldId === primaryCommentField?.id)?.value as string || '';
 
-
     // Add new feedback
-    const newFeedback: Feedback = {
-        id: `fb-${Date.now()}-${Math.random()}`,
-        businessId,
-        customerId: customerId,
-        values: data.feedbackValues,
-        rating: primaryRatingValue,
-        comment: primaryCommentValue,
-        date: format(new Date(), 'yyyy-MM-dd')
-    };
-    feedbacks.push(newFeedback);
+    const { data: newFeedbackData, error: feedbackError } = await supabase
+        .from('feedbacks')
+        .insert({
+            business_id: businessId,
+            customer_id: customerId,
+            rating: primaryRatingValue,
+            comment: primaryCommentValue,
+            date: format(new Date(), 'yyyy-MM-dd')
+        })
+        .select()
+        .single();
+
+    if (feedbackError) {
+        console.error("Error adding feedback:", feedbackError);
+        throw feedbackError;
+    }
+
+    // Add feedback values
+    const feedbackValuesToInsert = data.feedbackValues.map(fv => ({
+        feedback_id: newFeedbackData.id,
+        field_id: fv.fieldId,
+        value: fv.value.toString()
+    }));
+    const { error: valuesError } = await supabase.from('feedback_values').insert(feedbackValuesToInsert);
+    if (valuesError) {
+        console.error("Error adding feedback values:", valuesError);
+        // you might want to delete the feedback record here
+        throw valuesError;
+    }
     
     // Update business stats
-    const allFeedbacksForBusiness = feedbacks.filter(f => f.businessId === businessId);
+    const { data: allFeedbacksForBusiness, error: statsError } = await supabase
+        .from('feedbacks')
+        .select('rating')
+        .eq('business_id', businessId);
+    
+    if (statsError) {
+        console.error("Error fetching feedbacks for stats update", statsError);
+        throw statsError;
+    }
+
     const totalRating = allFeedbacksForBusiness.reduce((acc, f) => acc + f.rating, 0);
-    business.avgRating = totalRating / allFeedbacksForBusiness.length;
-    business.reviews = allFeedbacksForBusiness.filter(f => f.rating < 4).length;
+    const avgRating = totalRating / allFeedbacksForBusiness.length;
+    const reviews = allFeedbacksForBusiness.filter(f => f.rating < 4).length;
 
+    await supabase.from('businesses').update({ avg_rating: avgRating, reviews: reviews }).eq('id', businessId);
 
-    return newFeedback;
+    return { ...newFeedbackData, businessId: newFeedbackData.business_id, customerId: newFeedbackData.customer_id, values: data.feedbackValues };
 }

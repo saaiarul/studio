@@ -7,17 +7,27 @@ import { AddBusinessDialog } from '@/components/admin/AddBusinessDialog';
 import { BusinessTable } from '@/components/admin/BusinessTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getBusinesses, Business } from '@/lib/data';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 export default function AdminPage() {
     const [businesses, setBusinesses] = useState<Business[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchBusinesses = async () => {
             setIsLoading(true);
-            const biz = await getBusinesses();
-            setBusinesses(biz);
-            setIsLoading(false);
+            setError(null);
+            try {
+                const biz = await getBusinesses();
+                setBusinesses(biz);
+            } catch (err) {
+                setError("Failed to fetch businesses. Please check your connection and Supabase setup.");
+                console.error(err);
+            } finally {
+                setIsLoading(false);
+            }
         };
         fetchBusinesses();
     }, []);
@@ -28,6 +38,25 @@ export default function AdminPage() {
 
     const handleBusinessUpdated = (updatedBusiness: Business) => {
         setBusinesses(prev => prev.map(b => b.id === updatedBusiness.id ? updatedBusiness : b));
+    }
+
+    const renderContent = () => {
+        if (isLoading) {
+            return <p>Loading businesses...</p>;
+        }
+        if (error) {
+            return (
+                <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
+            );
+        }
+        if (businesses.length === 0) {
+            return <p className="text-center text-muted-foreground">No businesses found. Add one to get started!</p>
+        }
+        return <BusinessTable businesses={businesses} onBusinessUpdated={handleBusinessUpdated} />;
     }
 
   return (
@@ -42,11 +71,7 @@ export default function AdminPage() {
                 <CardDescription>View, edit, or add new businesses to the platform.</CardDescription>
             </CardHeader>
             <CardContent>
-                {isLoading ? (
-                    <p>Loading businesses...</p>
-                ) : (
-                    <BusinessTable businesses={businesses} onBusinessUpdated={handleBusinessUpdated} />
-                )}
+                {renderContent()}
             </CardContent>
         </Card>
     </DashboardLayout>
