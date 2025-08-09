@@ -123,6 +123,7 @@ export async function getBusinessById(id: string): Promise<Business | null> {
 
 export async function createBusiness(data: { businessName: string, ownerEmail: string }): Promise<Business> {
     const newId = `comp-${Date.now()}`;
+    const reviewUrl = `https://studio-8amg.vercel.app/review/${newId}`;
     const { data: newBusinessData, error } = await supabase
         .from('businesses')
         .insert({
@@ -130,7 +131,7 @@ export async function createBusiness(data: { businessName: string, ownerEmail: s
             name: data.businessName,
             owner_email: data.ownerEmail,
             password: `password-${Math.random().toString(36).substring(2, 10)}`,
-            review_url: `/review/${newId}`,
+            review_url: reviewUrl,
             google_review_link: '',
             welcome_message: `Leave a review for ${data.businessName}`
         })
@@ -292,7 +293,7 @@ export async function addCustomer(businessId: string, data: { name: string, phon
 
     return {
         id: newCustomerData.id,
-        businessId: newBusinessData.business_id,
+        businessId: newCustomerData.business_id,
         name: newCustomerData.name,
         phone: newCustomerData.phone,
         email: newCustomerData.email,
