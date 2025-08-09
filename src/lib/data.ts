@@ -85,6 +85,7 @@ export async function getBusinesses(): Promise<Business[]> {
         welcomeMessage: b.welcome_message,
         theme: b.theme,
         reviewFormFields: b.review_form_fields,
+        password: b.password,
     }));
 }
 
@@ -116,6 +117,7 @@ export async function getBusinessById(id: string): Promise<Business | null> {
         welcomeMessage: data.welcome_message,
         theme: data.theme,
         reviewFormFields: data.review_form_fields,
+        password: data.password,
     };
 }
 
@@ -129,6 +131,8 @@ export async function createBusiness(data: { businessName: string, ownerEmail: s
             owner_email: data.ownerEmail,
             password: `password-${Math.random().toString(36).substring(2, 10)}`,
             review_url: `http://localhost:3000/review/${newId}`, // You might want to get this from env
+            google_review_link: '',
+            welcome_message: `Leave a review for ${data.businessName}`
         })
         .select()
         .single();
@@ -148,6 +152,7 @@ export async function createBusiness(data: { businessName: string, ownerEmail: s
         googleReviewLink: newBusinessData.google_review_link,
         status: newBusinessData.status,
         credits: newBusinessData.credits,
+        password: newBusinessData.password,
     };
 }
 
@@ -164,6 +169,7 @@ export async function updateBusiness(id: string, data: Partial<Omit<Business, 'i
     if (data.welcomeMessage) updateData.welcome_message = data.welcomeMessage;
     if (data.theme) updateData.theme = data.theme;
     if (data.reviewFormFields) updateData.review_form_fields = data.reviewFormFields;
+    if (data.googleReviewLink) updateData.google_review_link = data.googleReviewLink;
 
 
     const { data: updatedBusinessData, error } = await supabase
@@ -192,6 +198,7 @@ export async function updateBusiness(id: string, data: Partial<Omit<Business, 'i
         welcomeMessage: updatedBusinessData.welcome_message,
         theme: updatedBusinessData.theme,
         reviewFormFields: updatedBusinessData.review_form_fields,
+        password: updatedBusinessData.password
     };
 }
 
@@ -231,7 +238,15 @@ export async function getFeedbackByBusinessIdWithFullData(businessId: string): P
         console.error("Error fetching full feedback data:", error);
         throw error;
     }
-    return data;
+    return data.map(f => ({
+        id: f.id,
+        businessId: f.business_id,
+        customerId: f.customer_id,
+        values: f.values, // This might be incorrect if `values` are in another table
+        comment: f.comment,
+        rating: f.rating,
+        date: f.date,
+    }));
 }
 
 
@@ -294,7 +309,8 @@ export async function addFeedback(businessId: string, data: { feedbackValues: Fe
     // Find or create customer
     let { data: customer } = await supabase.from('customers').select('id').eq('name', data.customerName).eq('business_id', businessId).single();
     if (!customer) {
-        customer = await addCustomer(businessId, { name: data.customerName });
+        const newCustomer = await addCustomer(businessId, { name: data.customerName });
+        customer = { id: newCustomer.id };
     }
     const customerId = customer!.id;
     
@@ -351,5 +367,14 @@ export async function addFeedback(businessId: string, data: { feedbackValues: Fe
 
     await supabase.from('businesses').update({ avg_rating: avgRating, reviews: reviews }).eq('id', businessId);
 
-    return { ...newFeedbackData, businessId: newFeedbackData.business_id, customerId: newFeedbackData.customer_id, values: data.feedbackValues };
+    const resultFeedback: Feedback = { 
+        id: newFeedbackData.id,
+        businessId: newFeedbackData.business_id, 
+        customerId: newFeedbackData.customer_id, 
+        values: data.feedbackValues,
+        comment: newFeedbackData.comment,
+        rating: newFeedbackData.rating,
+        date: newFeedbackData.date,
+    };
+    return resultFeedback;
 }
