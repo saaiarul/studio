@@ -130,7 +130,7 @@ export async function createBusiness(data: { businessName: string, ownerEmail: s
             name: data.businessName,
             owner_email: data.ownerEmail,
             password: `password-${Math.random().toString(36).substring(2, 10)}`,
-            review_url: `http://localhost:3000/review/${newId}`, // You might want to get this from env
+            review_url: `/review/${newId}`,
             google_review_link: '',
             welcome_message: `Leave a review for ${data.businessName}`
         })
@@ -292,7 +292,7 @@ export async function addCustomer(businessId: string, data: { name: string, phon
 
     return {
         id: newCustomerData.id,
-        businessId: newCustomerData.business_id,
+        businessId: newBusinessData.business_id,
         name: newCustomerData.name,
         phone: newCustomerData.phone,
         email: newCustomerData.email,
