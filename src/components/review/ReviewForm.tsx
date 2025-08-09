@@ -51,23 +51,23 @@ export function ReviewForm({ businessId, googleReviewLink, onReviewSubmitted, cu
     }));
 
     try {
+        await addFeedback(businessId, { feedbackValues: feedbackData, customerName });
+
         // Find the first rating field and its value to check for Google Review redirect
         const firstRatingField = formFields.find(f => f.type === 'rating');
         const firstRatingValue = firstRatingField ? (feedbackValues[firstRatingField.id] as number) : 0;
-
-        // Find the first comment field and its value
-        const firstCommentField = formFields.find(f => f.type === 'comment');
-        const firstCommentValue = firstCommentField ? (feedbackValues[firstCommentField.id] as string) : '';
-
-        // If the rating is high and there's no substantial comment, redirect to Google.
-        if (firstRatingValue >= 4 && (!firstCommentField || (firstCommentValue || '').trim().length < 10) && googleReviewLink) {
+        
+        // If the rating is high, redirect to Google after saving.
+        if (firstRatingValue >= 4 && googleReviewLink) {
           toast({
             title: 'Thank you for the high rating!',
             description: 'Redirecting you to leave a public review...',
           });
-          window.location.href = googleReviewLink;
+          // Use a short delay to allow the toast to be seen before redirecting
+          setTimeout(() => {
+            window.location.href = googleReviewLink;
+          }, 1500);
         } else {
-          await addFeedback(businessId, { feedbackValues: feedbackData, customerName });
           onReviewSubmitted();
         }
     } catch (error) {
