@@ -4,6 +4,7 @@
 // We're using a static list here for demonstration purposes.
 
 import { format, subDays } from 'date-fns';
+import { supabase } from './supabaseClient';
 
 export type BusinessStatus = 'approved' | 'pending' | 'rejected';
 
