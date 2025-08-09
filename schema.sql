@@ -1,98 +1,101 @@
--- Create ENUM types if they don't exist
-DO $$ BEGIN
-    CREATE TYPE public.business_status AS ENUM ('pending', 'approved', 'rejected');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
+-- Drop existing objects in reverse order of dependency, using CASCADE to handle dependencies.
+DROP TABLE IF EXISTS public.feedback_values CASCADE;
+DROP TABLE IF EXISTS public.feedbacks CASCADE;
+DROP TABLE IF EXISTS public.customers CASCADE;
+DROP TABLE IF EXISTS public.businesses CASCADE;
+DROP TYPE IF EXISTS public.business_status CASCADE;
 
-DO $$ BEGIN
-    CREATE TYPE public.review_field_type AS ENUM ('rating', 'comment');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
+-- Create ENUM type for business status
+CREATE TYPE public.business_status AS ENUM ('pending', 'approved', 'rejected');
 
-
--- Create Businesses table if it doesn't exist
-CREATE TABLE IF NOT EXISTS public.businesses (
-    id character varying NOT NULL PRIMARY KEY,
-    name character varying NOT NULL,
-    owner_email character varying NOT NULL,
-    password character varying,
+-- Create businesses table
+CREATE TABLE public.businesses (
+    id text NOT NULL PRIMARY KEY,
+    name text NOT NULL,
+    owner_email text NOT NULL UNIQUE,
+    password text NOT NULL,
     reviews integer DEFAULT 0 NOT NULL,
     avg_rating real DEFAULT 0 NOT NULL,
-    review_url character varying,
-    google_review_link character varying,
+    review_url text,
+    google_review_link text,
     status public.business_status DEFAULT 'pending' NOT NULL,
     credits integer DEFAULT 10 NOT NULL,
-    logo_url character varying,
-    welcome_message character varying,
+    logo_url text,
+    welcome_message text,
     theme jsonb,
     review_form_fields jsonb
 );
 
--- Create Customers table if it doesn't exist
-CREATE TABLE IF NOT EXISTS public.customers (
+-- Create customers table
+CREATE TABLE public.customers (
     id uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
-    business_id character varying NOT NULL,
-    name character varying NOT NULL,
-    phone character varying,
-    email character varying,
+    business_id text NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+    name text NOT NULL,
+    phone text,
+    email text,
     first_review_date date NOT NULL,
-    CONSTRAINT customers_business_id_fkey FOREIGN KEY (business_id) REFERENCES public.businesses(id) ON DELETE CASCADE
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
--- Create Feedbacks table if it doesn't exist
-CREATE TABLE IF NOT EXISTS public.feedbacks (
+-- Create feedbacks table
+CREATE TABLE public.feedbacks (
     id uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
-    business_id character varying NOT NULL,
-    customer_id uuid NOT NULL,
-    rating real NOT NULL,
+    business_id text NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+    customer_id uuid NOT NULL REFERENCES public.customers(id) ON DELETE CASCADE,
+    rating integer NOT NULL,
     comment text,
     date date NOT NULL,
-    CONSTRAINT feedback_business_id_fkey FOREIGN KEY (business_id) REFERENCES public.businesses(id) ON DELETE CASCADE,
-    CONSTRAINT feedback_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.customers(id) ON DELETE CASCADE
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
--- Create Feedback_Values table if it doesn't exist
-CREATE TABLE IF NOT EXISTS public.feedback_values (
+-- Create feedback_values table to store dynamic field data
+CREATE TABLE public.feedback_values (
     id uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
-    feedback_id uuid NOT NULL,
-    field_id character varying NOT NULL,
+    feedback_id uuid NOT NULL REFERENCES public.feedbacks(id) ON DELETE CASCADE,
+    field_id text NOT NULL,
     value text NOT NULL,
-    CONSTRAINT feedback_values_feedback_id_fkey FOREIGN KEY (feedback_id) REFERENCES public.feedbacks(id) ON DELETE CASCADE
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
-
--- RLS POLICIES
--- Make sure RLS is enabled for all tables
+-- Enable Row Level Security (RLS) for all tables
 ALTER TABLE public.businesses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.feedbacks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.feedback_values ENABLE ROW LEVEL SECURITY;
 
--- Drop existing policies before creating new ones to avoid errors on re-run
-DROP POLICY IF EXISTS "Allow public read access on businesses" ON public.businesses;
-DROP POLICY IF EXISTS "Allow admin full access on businesses" ON public.businesses;
-DROP POLICY IF EXISTS "Allow public read access on customers" ON public.customers;
-DROP POLICY IF EXISTS "Allow individual customer access" ON public.customers;
-DROP POLICY IF EXISTS "Allow admin full access on customers" ON public.customers;
-DROP POLICY IF EXISTS "Allow public read access on feedback" ON public.feedbacks;
-DROP POLICY IF EXISTS "Allow individual feedback access" ON public.feedbacks;
-DROP POLICY IF EXISTS "Allow admin full access on feedback" ON public.feedbacks;
-DROP POLICY IF EXISTS "Allow public read access on feedback_values" ON public.feedback_values;
-DROP POLICY IF EXISTS "Allow admin full access on feedback_values" ON public.feedback_values;
+-- Define Policies for `businesses` table
+CREATE POLICY "Allow public read-only access to businesses" ON public.businesses
+FOR SELECT USING (true);
 
--- Create policies
-CREATE POLICY "Allow public read access on businesses" ON public.businesses FOR SELECT USING (true);
-CREATE POLICY "Allow admin full access on businesses" ON public.businesses FOR ALL USING (true); 
+CREATE POLICY "Allow anonymous insert access for new business applications" ON public.businesses
+FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Allow public read access on customers" ON public.customers FOR SELECT USING (true);
-CREATE POLICY "Allow individual customer access" ON public.customers FOR ALL USING (true); 
-CREATE POLICY "Allow admin full access on customers" ON public.customers FOR ALL USING (true); 
+CREATE POLICY "Allow admin users to update businesses" ON public.businesses
+FOR UPDATE USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');
 
-CREATE POLICY "Allow public read access on feedback" ON public.feedbacks FOR SELECT USING (true);
-CREATE POLICY "Allow individual feedback access" ON public.feedbacks FOR ALL USING (true); 
-CREATE POLICY "Allow admin full access on feedback" ON public.feedbacks FOR ALL USING (true);
+-- Define Policies for `customers` table
+CREATE POLICY "Allow public read-only access to customers" ON public.customers
+FOR SELECT USING (true);
 
-CREATE POLICY "Allow public read access on feedback_values" ON public.feedback_values FOR SELECT USING (true);
-CREATE POLICY "Allow admin full access on feedback_values" ON public.feedback_values FOR ALL USING (true);
+CREATE POLICY "Allow anonymous insert access to customers" ON public.customers
+FOR INSERT WITH CHECK (true);
+
+-- Define Policies for `feedbacks` table
+CREATE POLICY "Allow public read-only access to feedbacks" ON public.feedbacks
+FOR SELECT USING (true);
+
+CREATE POLICY "Allow anonymous insert access to feedbacks" ON public.feedbacks
+FOR INSERT WITH CHECK (true);
+
+-- Define Policies for `feedback_values` table
+CREATE POLICY "Allow public read-only access to feedback values" ON public.feedback_values
+FOR SELECT USING (true);
+
+CREATE POLICY "Allow anonymous insert access to feedback values" ON public.feedback_values
+FOR INSERT WITH CHECK (true);
+
+-- Create a default business for testing purposes
+INSERT INTO public.businesses (id, name, owner_email, password, status, google_review_link, welcome_message, review_form_fields, theme)
+VALUES 
+('comp-123', 'Innovate Inc.', 'company@reviewroute.com', 'password', 'approved', 'https://www.google.com', 'Leave a review for Innovate Inc.', '[{"id": "rating-1", "type": "rating", "label": "How would you rate our service?", "isOptional": false}, {"id": "comment-1", "type": "comment", "label": "Any additional comments?", "isOptional": true}]', '{"primaryColor": "#64B5F6", "backgroundColor": "#F5F5F5", "textColor": "#333333", "buttonColor": "#26A69A", "buttonTextColor": "#FFFFFF"}')
+ON CONFLICT (id) DO NOTHING;
