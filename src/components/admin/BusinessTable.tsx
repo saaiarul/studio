@@ -66,7 +66,9 @@ export function BusinessTable({ businesses, onBusinessUpdated }: BusinessTablePr
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const qrCodeApiUrl = selectedBusiness ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(selectedBusiness.reviewUrl)}` : '';
+  const reviewUrl = selectedBusiness ? `https://studio-8amg.vercel.app/review/${selectedBusiness.id}` : '';
+  const qrCodeApiUrl = reviewUrl ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(reviewUrl)}` : '';
+
 
   const handleEditSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

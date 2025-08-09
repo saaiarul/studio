@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from 'next/image';
@@ -7,7 +8,7 @@ import { Download } from 'lucide-react';
 
 type QRCodeCardProps = {
   companyName: string;
-  reviewUrl: string;
+  reviewUrl: string; // This will now be the full URL
 };
 
 export function QRCodeCard({ companyName, reviewUrl }: QRCodeCardProps) {

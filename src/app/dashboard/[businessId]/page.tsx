@@ -1,3 +1,4 @@
+
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { QRCodeCard } from '@/components/dashboard/QRCodeCard';
 import { StatsCards } from '@/components/dashboard/StatsCards';
@@ -54,6 +55,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     credits: companyData.credits,
   };
 
+  const reviewUrl = `https://studio-8amg.vercel.app/review/${companyData.id}`;
 
   return (
     <DashboardLayout role="company">
@@ -67,7 +69,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
             <GoogleLinkCard currentLink={companyData.googleReviewLink} />
           </div>
           <div className="lg:col-span-1">
-            <QRCodeCard companyName={companyData.name} reviewUrl={companyData.reviewUrl} />
+            <QRCodeCard companyName={companyData.name} reviewUrl={reviewUrl} />
           </div>
         </div>
         
