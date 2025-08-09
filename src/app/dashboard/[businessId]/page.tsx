@@ -1,4 +1,5 @@
 
+
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { QRCodeCard } from '@/components/dashboard/QRCodeCard';
 import { StatsCards } from '@/components/dashboard/StatsCards';
@@ -55,7 +56,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     credits: companyData.credits,
   };
 
-  const reviewUrl = `https://studio-8amg.vercel.app/review/${companyData.id}`;
+  const reviewUrl = `https://reviewdeep.vercel.app/review/${companyData.id}`;
 
   return (
     <DashboardLayout role="company">
@@ -78,3 +79,5 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     </DashboardLayout>
   );
 }
+
+    

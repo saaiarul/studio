@@ -123,7 +123,7 @@ export async function getBusinessById(id: string): Promise<Business | null> {
 
 export async function createBusiness(data: { businessName: string, ownerEmail: string }): Promise<Business> {
     const newId = `comp-${Date.now()}`;
-    const reviewUrl = `https://studio-8amg.vercel.app/review/${newId}`;
+    const reviewUrl = `https://reviewdeep.vercel.app/review/${newId}`;
     const { data: newBusinessData, error } = await supabase
         .from('businesses')
         .insert({
@@ -379,3 +379,5 @@ export async function addFeedback(businessId: string, data: { feedbackValues: Fe
     };
     return resultFeedback;
 }
+
+    

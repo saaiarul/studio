@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState } from 'react';
@@ -66,7 +67,7 @@ export function BusinessTable({ businesses, onBusinessUpdated }: BusinessTablePr
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const reviewUrl = selectedBusiness ? `https://studio-8amg.vercel.app/review/${selectedBusiness.id}` : '';
+  const reviewUrl = selectedBusiness ? `https://reviewdeep.vercel.app/review/${selectedBusiness.id}` : '';
   const qrCodeApiUrl = reviewUrl ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(reviewUrl)}` : '';
 
 
@@ -258,3 +259,5 @@ export function BusinessTable({ businesses, onBusinessUpdated }: BusinessTablePr
     </Dialog>
   );
 }
+
+    
