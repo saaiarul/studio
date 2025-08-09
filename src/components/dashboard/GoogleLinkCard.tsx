@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -7,28 +8,36 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from "@/hooks/use-toast";
 import { ExternalLink } from 'lucide-react';
+import { updateBusiness } from '@/lib/data';
 
 type GoogleLinkCardProps = {
   currentLink: string;
+  businessId: string;
 };
 
-export function GoogleLinkCard({ currentLink }: GoogleLinkCardProps) {
+export function GoogleLinkCard({ currentLink, businessId }: GoogleLinkCardProps) {
   const [link, setLink] = useState(currentLink);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Mock API call
-    setTimeout(() => {
-      console.log('Updating Google Review Link to:', link);
-      toast({
-        title: "Link Updated",
-        description: "Your Google Review link has been successfully updated.",
-      });
-      setIsLoading(false);
-    }, 1000);
+    try {
+        await updateBusiness(businessId, { googleReviewLink: link });
+         toast({
+            title: "Link Updated",
+            description: "Your Google Review link has been successfully updated.",
+        });
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: "Could not update the Google Review link.",
+        });
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (

@@ -232,7 +232,7 @@ export async function getFeedbackByBusinessId(businessId: string): Promise<Pick<
 export async function getFeedbackByBusinessIdWithFullData(businessId: string): Promise<Feedback[]> {
     const { data, error } = await supabase
         .from('feedbacks')
-        .select('*')
+        .select('*, feedback_values(*)')
         .eq('business_id', businessId);
     
     if (error) {
@@ -243,7 +243,7 @@ export async function getFeedbackByBusinessIdWithFullData(businessId: string): P
         id: f.id,
         businessId: f.business_id,
         customerId: f.customer_id,
-        values: f.values, // This might be incorrect if `values` are in another table
+        values: f.feedback_values.map((fv: any) => ({fieldId: fv.field_id, value: fv.value})),
         comment: f.comment,
         rating: f.rating,
         date: f.date,
@@ -342,9 +342,11 @@ export async function addFeedback(businessId: string, data: { feedbackValues: Fe
     const feedbackValuesToInsert = data.feedbackValues.map(fv => ({
         feedback_id: newFeedbackData.id,
         field_id: fv.fieldId,
-        value: fv.value.toString()
+        value: fv.value.toString() // Ensure value is a string for Supabase
     }));
+
     const { error: valuesError } = await supabase.from('feedback_values').insert(feedbackValuesToInsert);
+
     if (valuesError) {
         console.error("Error adding feedback values:", valuesError);
         // you might want to delete the feedback record here
@@ -379,5 +381,3 @@ export async function addFeedback(businessId: string, data: { feedbackValues: Fe
     };
     return resultFeedback;
 }
-
-    

@@ -67,7 +67,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           <div className="lg:col-span-2 space-y-8">
             <StatsCards stats={reviewStats} />
             <FeedbackChart feedback={feedback} />
-            <GoogleLinkCard currentLink={companyData.googleReviewLink} />
+            <GoogleLinkCard currentLink={companyData.googleReviewLink} businessId={params.businessId} />
           </div>
           <div className="lg:col-span-1">
             <QRCodeCard companyName={companyData.name} reviewUrl={reviewUrl} />
@@ -79,5 +79,3 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     </DashboardLayout>
   );
 }
-
-    
