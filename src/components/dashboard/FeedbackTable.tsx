@@ -46,9 +46,9 @@ export function FeedbackTable({ feedback }: FeedbackTableProps) {
     <Card className="shadow-lg">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Recent Negative Feedback</CardTitle>
+          <CardTitle>Recent Feedback</CardTitle>
           <CardDescription>
-            Here's what customers with a rating of less than 4 said about you.
+            Here's what your customers have said about you recently.
           </CardDescription>
         </div>
         <Button variant="outline" size="sm" onClick={exportToCSV}>
@@ -69,7 +69,7 @@ export function FeedbackTable({ feedback }: FeedbackTableProps) {
             {feedback.length === 0 && (
                 <TableRow>
                     <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
-                        No negative feedback to display. Great job!
+                        No feedback has been submitted yet.
                     </TableCell>
                 </TableRow>
             )}

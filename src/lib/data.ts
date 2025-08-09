@@ -213,8 +213,7 @@ export async function getFeedbackByBusinessId(businessId: string): Promise<Pick<
             date,
             customers ( name )
         `)
-        .eq('business_id', businessId)
-        .lt('rating', 4);
+        .eq('business_id', businessId);
 
     if (error) {
         console.error("Error fetching feedback:", error);
