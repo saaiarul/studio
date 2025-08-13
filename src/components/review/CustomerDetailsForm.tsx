@@ -8,6 +8,13 @@ import { User, Phone, Mail } from 'lucide-react';
 import { Checkbox } from '../ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { addCustomer, Business } from '@/lib/data';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 type CustomerDetailsFormProps = {
     business: Business;
@@ -16,13 +23,14 @@ type CustomerDetailsFormProps = {
 
 export function CustomerDetailsForm({ business, onDetailsSubmitted }: CustomerDetailsFormProps) {
   const [name, setName] = useState('');
+  const [countryCode, setCountryCode] = useState('+91');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [wantsWhatsapp, setWantsWhatsapp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const validatePhone = (phoneNumber: string) => /^\+?\d{10,15}$/.test(phoneNumber) || phoneNumber === '';
+  const validatePhone = (phoneNumber: string) => /^\d{10}$/.test(phoneNumber) || phoneNumber === '';
   const validateEmail = (emailAddress: string) => /\S+@\S+\.\S+/.test(emailAddress) || emailAddress === '';
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,13 +44,15 @@ export function CustomerDetailsForm({ business, onDetailsSubmitted }: CustomerDe
         return;
     }
     if (phone && !validatePhone(phone)) {
-        toast({ variant: 'destructive', title: 'Please enter a valid phone number.', description: 'It should include the country code (e.g., +1) and be 10-15 digits long.' });
+        toast({ variant: 'destructive', title: 'Please enter a valid 10-digit phone number.'});
         return;
     }
 
     setIsLoading(true);
+    const fullPhoneNumber = phone ? `${countryCode}${phone}` : undefined;
+
     try {
-        const customer = await addCustomer(business.id, { name, phone, email });
+        const customer = await addCustomer(business.id, { name, phone: fullPhoneNumber, email });
         onDetailsSubmitted(customer);
     } catch(error) {
         toast({ variant: 'destructive', title: 'An error occurred.', description: 'Could not save customer details.'})
@@ -89,16 +99,30 @@ export function CustomerDetailsForm({ business, onDetailsSubmitted }: CustomerDe
       </div>
       <div className="space-y-2">
         <Label htmlFor="phone" style={mutedTextColor}>Phone Number</Label>
-         <div className="relative">
-            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5" style={mutedTextColor} />
-            <Input 
-                id="phone" 
-                value={phone} 
-                onChange={(e) => setPhone(e.target.value)} 
-                placeholder="+11234567890"
-                className="pl-10 placeholder:text-white/60"
-                style={inputStyle}
-            />
+         <div className="flex gap-2">
+            <Select value={countryCode} onValueChange={setCountryCode}>
+              <SelectTrigger className="w-[80px]" style={inputStyle}>
+                <SelectValue placeholder="Code" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="+91">+91</SelectItem>
+                <SelectItem value="+1">+1</SelectItem>
+                <SelectItem value="+44">+44</SelectItem>
+                <SelectItem value="+61">+61</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="relative flex-1">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5" style={mutedTextColor} />
+              <Input 
+                  id="phone" 
+                  value={phone} 
+                  onChange={(e) => setPhone(e.target.value)} 
+                  placeholder="1234567890"
+                  className="pl-10 placeholder:text-white/60"
+                  style={inputStyle}
+                  maxLength={10}
+              />
+            </div>
         </div>
         <p className="text-xs" style={mutedTextColor}>A coupon is only available if you provide a phone number.</p>
       </div>
