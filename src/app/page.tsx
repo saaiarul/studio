@@ -68,7 +68,7 @@ export default function LoginPage() {
         <CardHeader className="text-center">
           <div className="flex justify-center items-center gap-2 mb-2">
             <QrCode className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold font-headline text-black">Review Deep</h1>
+            <h1 className="text-3xl font-bold font-headline text-black">ReviewDeep</h1>
           </div>
           <CardTitle className="text-2xl font-headline text-black">Unlock Your Dashboard</CardTitle>
           <CardDescription className="text-black/70">Enter your credentials to access your account</CardDescription>
