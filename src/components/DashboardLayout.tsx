@@ -38,7 +38,7 @@ type DashboardLayoutProps = {
 const Logo = () => (
   <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary-foreground font-headline">
     <QrCode className="w-7 h-7" />
-    <span className="text-white/90">ReviewRoute</span>
+    <span className="text-white/90">Review Deep</span>
   </Link>
 );
 
@@ -56,7 +56,7 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
     ];
     user = {
       name: 'Admin User',
-      email: 'admin@reviewroute.com',
+      email: 'admin@reviewdeep.com',
       avatar: 'https://placehold.co/100x100/64B5F6/FFFFFF/png'
     };
   } else {
