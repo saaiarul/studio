@@ -1,3 +1,4 @@
+
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { CustomerList } from '@/components/settings/CustomerList';
 import { getBusinessById, getCustomersByBusinessId } from '@/lib/data';
@@ -19,7 +20,7 @@ export default async function CustomersPage({ params }: CustomersPageProps) {
   const customers = await getCustomersByBusinessId(params.businessId);
 
   return (
-    <DashboardLayout role="company">
+    <DashboardLayout role="company" business={companyData}>
         <div className="space-y-8">
             <div>
                 <h1 className="text-3xl font-bold font-headline">Customers</h1>

@@ -1,4 +1,5 @@
 
+
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { MessagingComposer } from '@/components/messaging/MessagingComposer';
 import { getBusinessById, getCustomersByBusinessId } from '@/lib/data';
@@ -20,7 +21,7 @@ export default async function MessagingPage({ params }: MessagingPageProps) {
   const customers = await getCustomersByBusinessId(params.businessId);
 
   return (
-    <DashboardLayout role="company">
+    <DashboardLayout role="company" business={companyData}>
         <div className="space-y-8">
             <div>
                 <h1 className="text-3xl font-bold font-headline">Messaging</h1>

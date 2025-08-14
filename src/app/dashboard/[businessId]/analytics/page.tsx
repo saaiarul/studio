@@ -22,7 +22,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
   const feedbackData = await getFeedbackByBusinessIdWithFullData(params.businessId);
 
   return (
-    <DashboardLayout role="company">
+    <DashboardLayout role="company" business={businessData}>
         <div className="space-y-8">
             <div>
                 <h1 className="text-3xl font-bold font-headline">Feedback Analytics</h1>

@@ -1,3 +1,4 @@
+
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { ReviewPageEditor } from '@/components/settings/ReviewPageEditor';
 import { getBusinessById } from '@/lib/data';
@@ -17,7 +18,7 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
   }
 
   return (
-    <DashboardLayout role="company">
+    <DashboardLayout role="company" business={companyData}>
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold font-headline">Settings</h1>

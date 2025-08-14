@@ -28,7 +28,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   
   if (companyData.status !== 'approved') {
     return (
-       <DashboardLayout role="company">
+       <DashboardLayout role="company" business={companyData}>
            <Card className="shadow-lg">
                 <CardHeader>
                     <CardTitle>Account Pending Approval</CardTitle>
@@ -59,7 +59,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   const reviewUrl = `https://reviewdeep.vercel.app/review/${companyData.id}`;
 
   return (
-    <DashboardLayout role="company">
+    <DashboardLayout role="company" business={companyData}>
       <div className="space-y-8">
         <h1 className="text-3xl font-bold font-headline">{companyData.name} Dashboard</h1>
         

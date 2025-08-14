@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React from 'react';
@@ -29,10 +30,12 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Business } from '@/lib/data';
 
 type DashboardLayoutProps = {
   children: React.ReactNode;
   role: 'admin' | 'company';
+  business?: Business;
 };
 
 const Logo = () => (
@@ -43,7 +46,7 @@ const Logo = () => (
 );
 
 
-export function DashboardLayout({ children, role }: DashboardLayoutProps) {
+export function DashboardLayout({ children, role, business }: DashboardLayoutProps) {
   const pathname = usePathname();
   const businessId = role === 'company' ? pathname.split('/')[2] : null;
 
@@ -68,9 +71,9 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
       { name: 'Settings', href: `/dashboard/${businessId}/settings`, icon: Settings },
     ] : [];
     user = {
-      name: 'Company User',
-      email: 'company@reviewdeep.com',
-      avatar: 'https://placehold.co/100x100/26A69A/FFFFFF/png'
+      name: business?.name || 'Company User',
+      email: business?.ownerEmail || 'company@reviewdeep.com',
+      avatar: business?.logoUrl || 'https://placehold.co/100x100/26A69A/FFFFFF/png'
     };
   }
 
