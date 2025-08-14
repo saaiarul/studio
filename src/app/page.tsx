@@ -63,8 +63,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-black via-blue-950 to-black bg-[length:200%_200%] animate-gradient">
-      <Card className="w-full max-w-md mx-4 shadow-2xl bg-white/90 backdrop-blur-sm border-white/20 text-black">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-black via-blue-950 to-black bg-[length:200%_200%] animate-gradient p-4">
+      <Card className="w-full max-w-md mx-auto shadow-2xl bg-white/90 backdrop-blur-sm border-white/20 text-black">
         <CardHeader className="text-center">
           <div className="flex justify-center items-center gap-2 mb-2">
             <QrCode className="h-8 w-8 text-primary" />

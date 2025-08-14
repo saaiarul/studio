@@ -32,7 +32,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
 
     return (
         <div 
-            className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center"
+            className="min-h-screen flex items-center justify-center p-4"
             style={pageStyle}
         >
             <div 

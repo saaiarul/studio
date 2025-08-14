@@ -76,7 +76,7 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen bg-background">
         <Sidebar className="bg-gradient-to-br from-black via-blue-950 to-black bg-[length:200%_200%] animate-gradient text-white" collapsible="icon">
           <SidebarContent>
             <SidebarHeader className="p-4 border-b border-white/10">
@@ -133,7 +133,7 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
                   </div>
               </div>
           </header>
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8">
             {children}
           </main>
         </SidebarInset>
