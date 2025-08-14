@@ -29,14 +29,19 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
                 <p className="text-muted-foreground">Deep dive into your customer feedback for {businessData.name}.</p>
             </div>
             
-            <div className="grid gap-8 lg:grid-cols-2">
-                <FeedbackTrends feedback={feedbackData} />
-                <SatisfactionBreakdown feedback={feedbackData} />
-            </div>
-
-            <div className="grid gap-8 lg:grid-cols-2">
-                <WordCloud feedback={feedbackData} />
-                <FeedbackHeatmap feedback={feedbackData} />
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+                <div className="lg:col-span-2">
+                    <FeedbackTrends feedback={feedbackData} />
+                </div>
+                <div className="lg:col-span-2">
+                    <SatisfactionBreakdown feedback={feedbackData} />
+                </div>
+                <div className="lg:col-span-2">
+                    <WordCloud feedback={feedbackData} />
+                </div>
+                <div className="lg:col-span-2">
+                    <FeedbackHeatmap feedback={feedbackData} />
+                </div>
             </div>
         </div>
     </DashboardLayout>

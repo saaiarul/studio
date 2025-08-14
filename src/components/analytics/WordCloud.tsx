@@ -44,12 +44,12 @@ export function WordCloud({ feedback }: WordCloudProps) {
     }, [feedback]);
 
     return (
-        <Card className="shadow-lg">
+        <Card className="shadow-lg h-full">
             <CardHeader>
                 <CardTitle>Common Keywords</CardTitle>
                 <CardDescription>Most frequently mentioned words in your feedback.</CardDescription>
             </CardHeader>
-            <CardContent className="h-[300px] flex items-center justify-center">
+            <CardContent className="h-[250px] flex items-center justify-center">
                 {wordFrequencies.length === 0 ? (
                      <p className="text-muted-foreground">Not enough comment data to generate a word cloud.</p>
                 ): (

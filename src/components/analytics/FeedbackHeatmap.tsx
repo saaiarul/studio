@@ -33,7 +33,7 @@ export function FeedbackHeatmap({ feedback }: FeedbackHeatmapProps) {
   const hoursOfDay = Array.from({ length: 12 }, (_, i) => `${i * 2}:00`);
 
   return (
-    <Card className="shadow-lg">
+    <Card className="shadow-lg h-full">
       <CardHeader>
         <CardTitle>Feedback Time Heatmap</CardTitle>
         <CardDescription>
